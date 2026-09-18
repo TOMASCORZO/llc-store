@@ -37,7 +37,7 @@ export default function Footer() {
                     <div className="footer-col-title">{t('footer.company')}</div>
                     <ul>
                         <li><Link href="/#faq">{t('nav.faq')}</Link></li>
-                        <li><a href="mailto:support@quickllc.com">{t('footer.contact')}</a></li>
+                        <li><a href="mailto:support@justmyllc.com">{t('footer.contact')}</a></li>
                     </ul>
                 </div>
 
@@ -51,7 +51,7 @@ export default function Footer() {
             </div>
 
             <div className="footer-bottom">
-                <span>© {new Date().getFullYear()} QuickLLC. All rights reserved.</span>
+                <span>© {new Date().getFullYear()} Just My LLC. All rights reserved.</span>
             </div>
         </footer>
     );

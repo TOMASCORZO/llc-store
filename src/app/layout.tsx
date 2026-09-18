@@ -3,7 +3,7 @@ import { LanguageProvider } from "@/i18n/LanguageContext";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "QuickLLC — Form Your US LLC & Open Stripe",
+  title: "Just My LLC — Form Your US LLC & Open Stripe",
   description: "The quickest way for global entrepreneurs to form a New Mexico LLC, get an EIN, and open a Stripe account.",
 };
 
