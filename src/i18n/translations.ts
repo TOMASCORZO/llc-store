@@ -88,7 +88,9 @@ export const translations = {
       "legal": "Legal",
       "terms": "Terms of Service",
       "privacy": "Privacy Policy",
-      "contact": "Contact"
+      "contact": "Contact",
+      "about": "About & delivery",
+      "refunds": "Refunds & cancellation"
     },
     "catalog": {
       "entity": "Entity type",
@@ -127,7 +129,8 @@ export const translations = {
       "agentValue": "1 year",
       "ownership": "LLC ownership",
       "single": "Single member",
-      "multiple": "Multiple members"
+      "multiple": "Multiple members",
+      "policyNotice": "Policies for your request (English):"
     }
   },
   "es": {
@@ -219,7 +222,9 @@ export const translations = {
       "legal": "Legal",
       "terms": "Términos de Servicio",
       "privacy": "Política de Privacidad",
-      "contact": "Contacto"
+      "contact": "Contacto",
+      "about": "Nosotros y entrega",
+      "refunds": "Reembolsos y cancelación"
     },
     "catalog": {
       "entity": "Tipo de entidad",
@@ -258,7 +263,8 @@ export const translations = {
       "agentValue": "1 año",
       "ownership": "Propietarios de la LLC",
       "single": "Un miembro",
-      "multiple": "Varios miembros"
+      "multiple": "Varios miembros",
+      "policyNotice": "Políticas de tu solicitud (en inglés):"
     }
   },
   "pt": {
@@ -350,7 +356,9 @@ export const translations = {
       "legal": "Legal",
       "terms": "Termos de Serviço",
       "privacy": "Política de Privacidade",
-      "contact": "Contato"
+      "contact": "Contato",
+      "about": "Sobre nós e entrega",
+      "refunds": "Reembolsos e cancelamento"
     },
     "catalog": {
       "entity": "Tipo de entidade",
@@ -389,7 +397,8 @@ export const translations = {
       "agentValue": "1 ano",
       "ownership": "Proprietários da LLC",
       "single": "Um membro",
-      "multiple": "Vários membros"
+      "multiple": "Vários membros",
+      "policyNotice": "Políticas da solicitação (em inglês):"
     }
   },
   "fr": {
@@ -481,7 +490,9 @@ export const translations = {
       "legal": "Légal",
       "terms": "Conditions d'utilisation",
       "privacy": "Confidentialité",
-      "contact": "Contact"
+      "contact": "Contact",
+      "about": "À propos et livraison",
+      "refunds": "Remboursements et annulation"
     },
     "catalog": {
       "entity": "Type d’entité",
@@ -520,7 +531,8 @@ export const translations = {
       "agentValue": "1 an",
       "ownership": "Propriétaires LLC",
       "single": "Un membre",
-      "multiple": "Plusieurs membres"
+      "multiple": "Plusieurs membres",
+      "policyNotice": "Politiques de votre demande (en anglais) :"
     }
   },
   "de": {
@@ -612,7 +624,9 @@ export const translations = {
       "legal": "Rechtliches",
       "terms": "Nutzungsbedingungen",
       "privacy": "Datenschutzerklärung",
-      "contact": "Kontakt"
+      "contact": "Kontakt",
+      "about": "Über uns und Ablauf",
+      "refunds": "Erstattungen und Stornierung"
     },
     "catalog": {
       "entity": "Rechtsform",
@@ -651,7 +665,8 @@ export const translations = {
       "agentValue": "1 Jahr",
       "ownership": "LLC-Eigentümer",
       "single": "Ein Mitglied",
-      "multiple": "Mehrere Mitglieder"
+      "multiple": "Mehrere Mitglieder",
+      "policyNotice": "Richtlinien für deine Anfrage (auf Englisch):"
     }
   },
   "zh": {
@@ -743,7 +758,9 @@ export const translations = {
       "legal": "法律信息",
       "terms": "服务条款",
       "privacy": "隐私政策",
-      "contact": "联系我们"
+      "contact": "联系我们",
+      "about": "关于我们与交付",
+      "refunds": "退款与取消"
     },
     "catalog": {
       "entity": "实体类型",
@@ -782,7 +799,8 @@ export const translations = {
       "agentValue": "1 年",
       "ownership": "LLC 所有者",
       "single": "单一成员",
-      "multiple": "多位成员"
+      "multiple": "多位成员",
+      "policyNotice": "申请相关政策（英文）："
     }
   }
 };

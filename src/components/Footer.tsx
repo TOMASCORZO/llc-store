@@ -37,7 +37,9 @@ export default function Footer() {
                     <div className="footer-col-title">{t('footer.company')}</div>
                     <ul>
                         <li><Link href="/#faq">{t('nav.faq')}</Link></li>
-                        <li><a href="mailto:support@justmyllc.com">{t('footer.contact')}</a></li>
+                        <li><Link href="/about">{t('footer.about')}</Link></li>
+                        <li><Link href="/contact">{t('footer.contact')}</Link></li>
+                        <li><a href="mailto:support@justmyllc.com">support@justmyllc.com</a></li>
                     </ul>
                 </div>
 
@@ -46,6 +48,7 @@ export default function Footer() {
                     <ul>
                         <li><Link href="/terms">{t('footer.terms')}</Link></li>
                         <li><Link href="/privacy">{t('footer.privacy')}</Link></li>
+                        <li><Link href="/refunds">{t('footer.refunds')}</Link></li>
                     </ul>
                 </div>
             </div>

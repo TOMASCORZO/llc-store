@@ -55,6 +55,13 @@ function FormationRequest() {
     <div className="checkout-form-side">
       <h1 className="t-h3">{t('catalog.request')}</h1>
       <p className="formation-note">{t('catalog.paymentNote')}</p>
+      <p className="formation-note">{t('catalog.policyNotice')}</p>
+      <nav className="policy-links" aria-label={t('footer.legal')}>
+        <Link href="/terms">{t('footer.terms')}</Link>
+        <Link href="/privacy">{t('footer.privacy')}</Link>
+        <Link href="/refunds">{t('footer.refunds')}</Link>
+        <Link href="/contact">{t('footer.contact')}</Link>
+      </nav>
       <form onSubmit={handleSubmit}>
         <fieldset disabled={isLoading} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
           <legend className="t-eyebrow">{t('catalog.choose')}</legend>
