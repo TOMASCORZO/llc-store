@@ -1,0 +1,716 @@
+[
+  {
+    "state": "Alabama",
+    "entity": "LLC",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 236
+  },
+  {
+    "state": "Alabama",
+    "entity": "S-Corp",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 236
+  },
+  {
+    "state": "Alaska",
+    "entity": "LLC",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 250
+  },
+  {
+    "state": "Alaska",
+    "entity": "S-Corp",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 250
+  },
+  {
+    "state": "Arizona",
+    "entity": "LLC",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 87
+  },
+  {
+    "state": "Arizona",
+    "entity": "S-Corp",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 98
+  },
+  {
+    "state": "Arkansas",
+    "entity": "LLC",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 45
+  },
+  {
+    "state": "Arkansas",
+    "entity": "S-Corp",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 45
+  },
+  {
+    "state": "California",
+    "entity": "LLC",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 75
+  },
+  {
+    "state": "California",
+    "entity": "S-Corp",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 105
+  },
+  {
+    "state": "Colorado",
+    "entity": "LLC",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 50
+  },
+  {
+    "state": "Colorado",
+    "entity": "S-Corp",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 50
+  },
+  {
+    "state": "Connecticut",
+    "entity": "LLC",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 120
+  },
+  {
+    "state": "Connecticut",
+    "entity": "S-Corp",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 250
+  },
+  {
+    "state": "Delaware",
+    "entity": "LLC",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 143
+  },
+  {
+    "state": "Delaware",
+    "entity": "S-Corp",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 142
+  },
+  {
+    "state": "Florida",
+    "entity": "LLC",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 125
+  },
+  {
+    "state": "Florida",
+    "entity": "S-Corp",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 70
+  },
+  {
+    "state": "Georgia",
+    "entity": "LLC",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 110
+  },
+  {
+    "state": "Georgia",
+    "entity": "S-Corp",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 110
+  },
+  {
+    "state": "Hawaii",
+    "entity": "LLC",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 51
+  },
+  {
+    "state": "Hawaii",
+    "entity": "S-Corp",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 51
+  },
+  {
+    "state": "Idaho",
+    "entity": "LLC",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 104
+  },
+  {
+    "state": "Idaho",
+    "entity": "S-Corp",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 104
+  },
+  {
+    "state": "Illinois",
+    "entity": "LLC",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 154
+  },
+  {
+    "state": "Illinois",
+    "entity": "S-Corp",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 154
+  },
+  {
+    "state": "Indiana",
+    "entity": "LLC",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 98
+  },
+  {
+    "state": "Indiana",
+    "entity": "S-Corp",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 98
+  },
+  {
+    "state": "Iowa",
+    "entity": "LLC",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 50
+  },
+  {
+    "state": "Iowa",
+    "entity": "S-Corp",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 50
+  },
+  {
+    "state": "Kansas",
+    "entity": "LLC",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 85
+  },
+  {
+    "state": "Kansas",
+    "entity": "S-Corp",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 85
+  },
+  {
+    "state": "Kentucky",
+    "entity": "LLC",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 40
+  },
+  {
+    "state": "Kentucky",
+    "entity": "S-Corp",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 55
+  },
+  {
+    "state": "Louisiana",
+    "entity": "LLC",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 105
+  },
+  {
+    "state": "Louisiana",
+    "entity": "S-Corp",
+    "allowed": false,
+    "formationFee": 0,
+    "stateFee": 75
+  },
+  {
+    "state": "Maine",
+    "entity": "LLC",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 175
+  },
+  {
+    "state": "Maine",
+    "entity": "S-Corp",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 145
+  },
+  {
+    "state": "Maryland",
+    "entity": "LLC",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 196
+  },
+  {
+    "state": "Maryland",
+    "entity": "S-Corp",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 217
+  },
+  {
+    "state": "Massachusetts",
+    "entity": "LLC",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 520
+  },
+  {
+    "state": "Massachusetts",
+    "entity": "S-Corp",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 265
+  },
+  {
+    "state": "Michigan",
+    "entity": "LLC",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 50
+  },
+  {
+    "state": "Michigan",
+    "entity": "S-Corp",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 60
+  },
+  {
+    "state": "Minnesota",
+    "entity": "LLC",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 155
+  },
+  {
+    "state": "Minnesota",
+    "entity": "S-Corp",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 155
+  },
+  {
+    "state": "Mississippi",
+    "entity": "LLC",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 54
+  },
+  {
+    "state": "Mississippi",
+    "entity": "S-Corp",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 54
+  },
+  {
+    "state": "Missouri",
+    "entity": "LLC",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 52
+  },
+  {
+    "state": "Missouri",
+    "entity": "S-Corp",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 60
+  },
+  {
+    "state": "Montana",
+    "entity": "LLC",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 35
+  },
+  {
+    "state": "Montana",
+    "entity": "S-Corp",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 35
+  },
+  {
+    "state": "Nebraska",
+    "entity": "LLC",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 103
+  },
+  {
+    "state": "Nebraska",
+    "entity": "S-Corp",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 103
+  },
+  {
+    "state": "Nevada",
+    "entity": "LLC",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 436
+  },
+  {
+    "state": "Nevada",
+    "entity": "S-Corp",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 744
+  },
+  {
+    "state": "New Hampshire",
+    "entity": "LLC",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 102
+  },
+  {
+    "state": "New Hampshire",
+    "entity": "S-Corp",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 102
+  },
+  {
+    "state": "New Jersey",
+    "entity": "LLC",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 104
+  },
+  {
+    "state": "New Jersey",
+    "entity": "S-Corp",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 104
+  },
+  {
+    "state": "New Mexico",
+    "entity": "LLC",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 52
+  },
+  {
+    "state": "New Mexico",
+    "entity": "S-Corp",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 102
+  },
+  {
+    "state": "New York",
+    "entity": "LLC",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 205
+  },
+  {
+    "state": "New York",
+    "entity": "S-Corp",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 130
+  },
+  {
+    "state": "North Carolina",
+    "entity": "LLC",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 128
+  },
+  {
+    "state": "North Carolina",
+    "entity": "S-Corp",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 128
+  },
+  {
+    "state": "North Dakota",
+    "entity": "LLC",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 135
+  },
+  {
+    "state": "North Dakota",
+    "entity": "S-Corp",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 100
+  },
+  {
+    "state": "Ohio",
+    "entity": "LLC",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 99
+  },
+  {
+    "state": "Ohio",
+    "entity": "S-Corp",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 99
+  },
+  {
+    "state": "Oklahoma",
+    "entity": "LLC",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 104
+  },
+  {
+    "state": "Oklahoma",
+    "entity": "S-Corp",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 52
+  },
+  {
+    "state": "Oregon",
+    "entity": "LLC",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 100
+  },
+  {
+    "state": "Oregon",
+    "entity": "S-Corp",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 100
+  },
+  {
+    "state": "Pennsylvania",
+    "entity": "LLC",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 125
+  },
+  {
+    "state": "Pennsylvania",
+    "entity": "S-Corp",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 125
+  },
+  {
+    "state": "Rhode Island",
+    "entity": "LLC",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 156
+  },
+  {
+    "state": "Rhode Island",
+    "entity": "S-Corp",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 238
+  },
+  {
+    "state": "South Carolina",
+    "entity": "LLC",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 132
+  },
+  {
+    "state": "South Carolina",
+    "entity": "S-Corp",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 325
+  },
+  {
+    "state": "South Dakota",
+    "entity": "LLC",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 154
+  },
+  {
+    "state": "South Dakota",
+    "entity": "S-Corp",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 154
+  },
+  {
+    "state": "Tennessee",
+    "entity": "LLC",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 308
+  },
+  {
+    "state": "Tennessee",
+    "entity": "S-Corp",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 103
+  },
+  {
+    "state": "Texas",
+    "entity": "LLC",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 309
+  },
+  {
+    "state": "Texas",
+    "entity": "S-Corp",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 309
+  },
+  {
+    "state": "Utah",
+    "entity": "LLC",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 59
+  },
+  {
+    "state": "Utah",
+    "entity": "S-Corp",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 59
+  },
+  {
+    "state": "Vermont",
+    "entity": "LLC",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 155
+  },
+  {
+    "state": "Vermont",
+    "entity": "S-Corp",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 155
+  },
+  {
+    "state": "Virginia",
+    "entity": "LLC",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 100
+  },
+  {
+    "state": "Virginia",
+    "entity": "S-Corp",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 75
+  },
+  {
+    "state": "Washington",
+    "entity": "LLC",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 200
+  },
+  {
+    "state": "Washington",
+    "entity": "S-Corp",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 200
+  },
+  {
+    "state": "Washington DC",
+    "entity": "LLC",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 99
+  },
+  {
+    "state": "Washington DC",
+    "entity": "S-Corp",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 99
+  },
+  {
+    "state": "West Virginia",
+    "entity": "LLC",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 100
+  },
+  {
+    "state": "West Virginia",
+    "entity": "S-Corp",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 100
+  },
+  {
+    "state": "Wisconsin",
+    "entity": "LLC",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 134
+  },
+  {
+    "state": "Wisconsin",
+    "entity": "S-Corp",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 103
+  },
+  {
+    "state": "Wyoming",
+    "entity": "LLC",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 103
+  },
+  {
+    "state": "Wyoming",
+    "entity": "S-Corp",
+    "allowed": true,
+    "formationFee": 0,
+    "stateFee": 103
+  }
+]

@@ -5,6 +5,9 @@ import TopNav from '@/components/TopNav';
 import Footer from '@/components/Footer';
 import { useLanguage } from '@/i18n/LanguageContext';
 import Link from 'next/link';
+import FormationSelector from '@/components/FormationSelector';
+import FormationSummary from '@/components/FormationSummary';
+import { DEFAULT_STATE, EntityType } from '@/lib/formation';
 
 function CheckIcon() {
     return (
@@ -34,6 +37,8 @@ function PlusIcon() {
 
 export default function HomePage() {
     const { t } = useLanguage();
+    const [entity, setEntity] = useState<EntityType>('LLC');
+    const [state, setState] = useState(DEFAULT_STATE);
     const [openFaq, setOpenFaq] = useState<number | null>(1); // default open first
 
     return (
@@ -126,24 +131,11 @@ export default function HomePage() {
                 </div>
             </section>
 
-            {/* ─── Trust Stats ─────────────────────────────────────────── */}
             <section className="stats-band">
-                <div className="stat-item">
-                    <div className="stat-value">1-3</div>
-                    <div className="stat-label">Weeks to get EIN from IRS</div>
-                </div>
-                <div className="stat-item">
-                    <div className="stat-value">$0</div>
-                    <div className="stat-label">New Mexico State Income Tax</div>
-                </div>
-                <div className="stat-item">
-                    <div className="stat-value">100%</div>
-                    <div className="stat-label">Remote Process for Non-residents</div>
-                </div>
-                <div className="stat-item">
-                    <div className="stat-value">Live</div>
-                    <div className="stat-label">Customer support assistance</div>
-                </div>
+                <div className="stat-item"><div className="stat-value">50 + DC</div><div className="stat-label">{t('catalog.statesLabel')}</div></div>
+                <div className="stat-item"><div className="stat-value">$50</div><div className="stat-label">{t('catalog.serviceLabel')}</div></div>
+                <div className="stat-item"><div className="stat-value">101</div><div className="stat-label">{t('catalog.baseLabel')}</div></div>
+                <div className="stat-item"><div className="stat-value">{t('catalog.agentValue')}</div><div className="stat-label">{t('catalog.agentLabel')}</div></div>
             </section>
 
             {/* ─── Pricing ─────────────────────────────────────────────── */}
@@ -151,8 +143,8 @@ export default function HomePage() {
                 <div className="pricing-inner">
                     <h2 className="t-h2">{t('pricing.title')}</h2>
                     
-                    <div className="card card-accent pricing-card center-card animate-pulse">
-                        <span className="pricing-badge">{t('pricing.badge')}</span>
+                    <div className="card card-accent pricing-card center-card">
+                        <span className="pricing-badge">Just My LLC</span>
                         <div className="pricing-amount">
                             <span className="currency">$</span>
                             <span className="price">{t('pricing.price')}</span>
@@ -162,21 +154,17 @@ export default function HomePage() {
                         </div>
                         
                         <p className="pricing-desc">{t('pricing.desc')}</p>
+                        <FormationSelector entity={entity} state={state} onChange={(entity, state) => { setEntity(entity); setState(state); }} />
+                        <FormationSummary entity={entity} state={state} />
                         
                         <ul className="pricing-features">
-                            {[0, 1, 2, 3, 4, 5, 6].map((i) => {
-                                const features = t('pricing.features');
-                                if (!Array.isArray(features)) return null;
-                                return (
-                                    <li key={i}>
-                                        <CheckIcon />
-                                        <span>{features[i]}</span>
-                                    </li>
-                                );
-                            })}
+                            {t('pricing.features').filter((_, i) => i !== 6 || entity === 'S-Corp').map(feature => (
+                                <li key={feature}><CheckIcon /><span>{feature}</span></li>
+                            ))}
                         </ul>
                         
-                        <Link href="/checkout" className="btn btn-accent btn-xl pricing-cta">
+                        <p className="formation-note">{t('catalog.extras')}</p>
+                        <Link href={`/checkout?entity=${entity}&state=${encodeURIComponent(state)}`} className="btn btn-accent btn-xl pricing-cta">
                             {t('pricing.cta')}
                         </Link>
                     </div>
@@ -222,8 +210,7 @@ export default function HomePage() {
                 
                 <div className="cta-inner">
                     <h2 className="t-h1" style={{ marginBottom: 24 }}>
-                        Ready to process payments <br/>
-                        <span style={{ color: 'var(--accent)' }}>globally?</span>
+                        {t('catalog.choose')}
                     </h2>
                     
                     <Link href="/checkout" className="btn btn-accent btn-xl">

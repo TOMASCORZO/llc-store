@@ -17,9 +17,9 @@ export default function Footer() {
                         {t('footer.desc')}
                     </p>
                     <div className="footer-tags">
-                        <span className="tag">New Mexico</span>
+                        <span className="tag">LLC & S Corp</span>
                         <span className="tag">Remote Setup</span>
-                        <span className="tag">Fast Filing</span>
+                        <span className="tag">Just My LLC</span>
                     </div>
                 </div>
                 
