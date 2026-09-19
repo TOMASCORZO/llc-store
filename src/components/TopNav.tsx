@@ -1,110 +1,77 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import Logo from './Logo';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { LanguageCode } from '@/i18n/translations';
 
 const LANGUAGES: { code: LanguageCode; label: string }[] = [
-    { code: 'en', label: 'English' },
-    { code: 'es', label: 'Español' },
-    { code: 'pt', label: 'Português' },
-    { code: 'fr', label: 'Français' },
-    { code: 'de', label: 'Deutsch' },
-    { code: 'zh', label: '中文' },
+    { code: 'en', label: 'English' }, { code: 'es', label: 'Español' },
+    { code: 'pt', label: 'Português' }, { code: 'fr', label: 'Français' },
+    { code: 'de', label: 'Deutsch' }, { code: 'zh', label: '中文' },
 ];
+const serviceLinks = [['/#includes', 'nav.features'], ['/#process', 'nav.process'], ['/#pricing', 'nav.pricing'], ['/#faq', 'nav.faq']];
+const companyLinks = [['/about', 'footer.about'], ['/contact', 'footer.contact']];
+const policyLinks = [['/terms', 'footer.terms'], ['/privacy', 'footer.privacy'], ['/refunds', 'footer.refunds']];
 
 export default function TopNav() {
     const { t, lang, setLang } = useLanguage();
-    const [langOpen, setLangOpen] = useState(false);
+    const pathname = usePathname();
+    const header = useRef<HTMLElement>(null);
+    const closeMenus = () => header.current?.querySelectorAll('details[open]').forEach(menu => menu.removeAttribute('open'));
 
-    return (
-        <header className="top-nav">
-            <div className="nav-left">
-                <Link href="/" aria-label="Home" style={{ textDecoration: 'none' }}>
-                    <Logo size={24} />
-                </Link>
-                <nav className="nav-links" aria-label="Primary">
-                    <Link href="/#includes">{t('nav.features')}</Link>
-                    <Link href="/#process">{t('nav.process')}</Link>
-                    <Link href="/#pricing">{t('nav.pricing')}</Link>
-                    <Link href="/#faq">{t('nav.faq')}</Link>
-                </nav>
-            </div>
-            
-            <div className="nav-actions">
-                <div className="lang-switcher">
-                    <button 
-                        className="lang-btn" 
-                        onClick={() => setLangOpen(!langOpen)}
-                        onBlur={() => setTimeout(() => setLangOpen(false), 200)}
-                    >
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <line x1="2" y1="12" x2="22" y2="12"></line>
-                            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-                        </svg>
-                        {lang.toUpperCase()}
-                    </button>
-                    {langOpen && (
-                        <div className="lang-dropdown">
-                            {LANGUAGES.map(l => (
-                                <button
-                                    key={l.code}
-                                    className={lang === l.code ? 'active' : ''}
-                                    onClick={() => {
-                                        setLang(l.code);
-                                        setLangOpen(false);
-                                    }}
-                                >
-                                    {l.label}
-                                </button>
-                            ))}
-                        </div>
-                    )}
-                </div>
-                <Link href="/checkout" className="btn btn-accent btn-sm">
-                    {t('nav.start')}
-                </Link>
-            </div>
+    useEffect(() => {
+        const outside = (event: PointerEvent) => {
+            if (!header.current?.contains(event.target as Node)) closeMenus();
+        };
+        const escape = (event: KeyboardEvent) => {
+            if (event.key !== 'Escape') return;
+            const open = header.current?.querySelector<HTMLDetailsElement>('details[open]');
+            if (open) { closeMenus(); open.querySelector('summary')?.focus(); }
+        };
+        document.addEventListener('pointerdown', outside);
+        document.addEventListener('keydown', escape);
+        return () => { document.removeEventListener('pointerdown', outside); document.removeEventListener('keydown', escape); };
+    }, []);
 
-            <details className="mobile-menu">
-                <summary aria-label="Open navigation">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                        <line x1="3" y1="12" x2="21" y2="12"></line>
-                        <line x1="3" y1="6" x2="21" y2="6"></line>
-                        <line x1="3" y1="18" x2="21" y2="18"></line>
-                    </svg>
-                </summary>
-                <div className="mobile-menu-panel">
-                    <nav aria-label="Mobile primary navigation">
-                        <Link href="/#includes">{t('nav.features')}</Link>
-                        <Link href="/#process">{t('nav.process')}</Link>
-                        <Link href="/#pricing">{t('nav.pricing')}</Link>
-                        <Link href="/#faq">{t('nav.faq')}</Link>
-                    </nav>
-                    <div className="mobile-actions">
-                        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 16 }}>
-                            {LANGUAGES.map(l => (
-                                <button
-                                    key={l.code}
-                                    onClick={() => setLang(l.code)}
-                                    style={{
-                                        padding: '4px 8px', border: '1px solid var(--line)', background: lang === l.code ? 'var(--accent-soft)' : 'var(--bg)',
-                                        color: lang === l.code ? 'var(--accent)' : 'var(--ink-2)', borderRadius: 4, fontSize: 12, cursor: 'pointer'
-                                    }}
-                                >
-                                    {l.label}
-                                </button>
-                            ))}
-                        </div>
-                        <Link href="/checkout" className="btn btn-accent" style={{ justifyContent: 'center' }}>
-                            {t('nav.start')}
-                        </Link>
+    function links(items: string[][]) {
+        return items.map(([href, key]) => <Link key={href} href={href} onClick={closeMenus} aria-current={pathname === href ? 'page' : undefined}>{t(key)}</Link>);
+    }
+    const languages = <label className="nav-language"><span className="sr-only">{t('nav.language')}</span>
+        <select value={lang} onChange={event => setLang(event.target.value as LanguageCode)}>
+            {LANGUAGES.map(language => <option key={language.code} value={language.code}>{language.label}</option>)}
+        </select>
+    </label>;
+
+    return <header className="top-nav" ref={header}>
+        <div className="nav-left">
+            <Link href="/" aria-label={t('nav.home')} onClick={closeMenus} className="nav-brand"><Logo size={24} /></Link>
+            <nav className="nav-links" aria-label={t('nav.navigation')}>
+                {links(serviceLinks)}
+                <details className="nav-information" onBlur={event => {
+                    if (!event.currentTarget.contains(event.relatedTarget as Node | null)) event.currentTarget.open = false;
+                }}>
+                    <summary className={companyLinks.concat(policyLinks).some(([href]) => href === pathname) ? 'active' : ''}>{t('nav.information')}<span className="nav-chevron" aria-hidden="true">⌄</span></summary>
+                    <div className="nav-information-panel">
+                        <div className="nav-link-group"><span className="t-eyebrow">{t('footer.company')}</span>{links(companyLinks)}</div>
+                        <div className="nav-link-group"><span className="t-eyebrow">{t('footer.legal')}</span>{links(policyLinks)}</div>
                     </div>
-                </div>
-            </details>
-        </header>
-    );
+                </details>
+            </nav>
+        </div>
+        <div className="nav-actions">{languages}<Link href="/checkout" className="btn btn-accent btn-sm">{t('nav.start')}</Link></div>
+        <details className="mobile-menu">
+            <summary aria-label={t('nav.navigation')}><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18" /></svg></summary>
+            <div className="mobile-menu-panel">
+                <nav aria-label={t('nav.navigation')}>
+                    <div className="nav-link-group"><span className="t-eyebrow">{t('footer.product')}</span>{links(serviceLinks)}</div>
+                    <div className="nav-link-group"><span className="t-eyebrow">{t('footer.company')}</span>{links(companyLinks)}</div>
+                    <div className="nav-link-group"><span className="t-eyebrow">{t('footer.legal')}</span>{links(policyLinks)}</div>
+                </nav>
+                <div className="mobile-actions">{languages}<Link href="/checkout" onClick={closeMenus} className="btn btn-accent">{t('nav.start')}</Link></div>
+            </div>
+        </details>
+    </header>;
 }

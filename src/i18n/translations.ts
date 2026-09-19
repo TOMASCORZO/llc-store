@@ -5,7 +5,11 @@ export const translations = {
       "process": "How it Works",
       "pricing": "Pricing",
       "faq": "FAQ",
-      "start": "Select your formation"
+      "start": "Select your formation",
+      "information": "Information",
+      "language": "Language",
+      "home": "Home",
+      "navigation": "Navigation"
     },
     "hero": {
       "tagline": "Company formation · EIN · Banking",
@@ -139,7 +143,11 @@ export const translations = {
       "process": "Proceso",
       "pricing": "Precios",
       "faq": "Preguntas",
-      "start": "Elegí tu constitución"
+      "start": "Elegí tu constitución",
+      "information": "Información",
+      "language": "Idioma",
+      "home": "Inicio",
+      "navigation": "Navegación"
     },
     "hero": {
       "tagline": "Constitución · EIN · Banco",
@@ -273,7 +281,11 @@ export const translations = {
       "process": "Como Funciona",
       "pricing": "Preços",
       "faq": "FAQ",
-      "start": "Escolha sua abertura"
+      "start": "Escolha sua abertura",
+      "information": "Informações",
+      "language": "Idioma",
+      "home": "Início",
+      "navigation": "Navegação"
     },
     "hero": {
       "tagline": "Abertura · EIN · Banco",
@@ -407,7 +419,11 @@ export const translations = {
       "process": "Comment ça marche",
       "pricing": "Tarifs",
       "faq": "FAQ",
-      "start": "Choisissez votre création"
+      "start": "Choisissez votre création",
+      "information": "Informations",
+      "language": "Langue",
+      "home": "Accueil",
+      "navigation": "Navigation"
     },
     "hero": {
       "tagline": "Création · EIN · Banque",
@@ -541,7 +557,11 @@ export const translations = {
       "process": "Ablauf",
       "pricing": "Preise",
       "faq": "FAQ",
-      "start": "Gründung auswählen"
+      "start": "Gründung auswählen",
+      "information": "Informationen",
+      "language": "Sprache",
+      "home": "Startseite",
+      "navigation": "Navigation"
     },
     "hero": {
       "tagline": "Gründung · EIN · Bank",
@@ -675,7 +695,11 @@ export const translations = {
       "process": "办理流程",
       "pricing": "价格",
       "faq": "常见问题",
-      "start": "选择注册方案"
+      "start": "选择注册方案",
+      "information": "信息",
+      "language": "语言",
+      "home": "首页",
+      "navigation": "导航"
     },
     "hero": {
       "tagline": "公司注册 · EIN · 银行",
