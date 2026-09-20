@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
 import pg from 'pg';
+import { rootCertificates } from 'node:tls';
 
 // Run inside Vercel: sensitive integration credentials never leave its environment.
 if (process.env.RUN_DB_MIGRATIONS !== '1') {
@@ -8,7 +9,10 @@ if (process.env.RUN_DB_MIGRATIONS !== '1') {
 }
 const connectionString = process.env.POSTGRES_URL_NON_POOLING || process.env.POSTGRES_URL;
 if (!connectionString) throw new Error('A Postgres connection is required to apply migrations.');
-const client = new pg.Client({ connectionString, connectionTimeoutMillis: 15000 });
+const databaseUrl = new URL(connectionString);
+databaseUrl.searchParams.delete('sslmode');
+const ca = await fs.readFile(new URL('./supabase-ca.crt', import.meta.url), 'utf8');
+const client = new pg.Client({ connectionString: databaseUrl.href, connectionTimeoutMillis: 15000, ssl: { ca: [...rootCertificates, ca], rejectUnauthorized: true } });
 try {
   await client.connect();
   await client.query("SELECT pg_advisory_lock(hashtext('justmyllc_schema'))");

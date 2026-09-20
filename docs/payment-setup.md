@@ -15,6 +15,7 @@ Vercel stores the private database variables as sensitive values, so `vercel env
 
 - Set `NEXT_PUBLIC_SUPABASE_URL` and a nonempty `SUPABASE_SERVICE_ROLE_KEY` in Vercel. Keep the service key server-only.
 - For Vercel deployments, set `RUN_DB_MIGRATIONS=1` in production. The build runs the schema migrations using the existing `POSTGRES_URL_NON_POOLING` or `POSTGRES_URL`, records applied migrations and verifies the order columns. A migration failure stops deployment.
+- The runner trusts the [Supabase Root 2021 CA](https://supabase-downloads.s3-ap-southeast-1.amazonaws.com/prod/ssl/prod-ca-2021.crt) in addition to Node’s system roots and keeps certificate and hostname verification enabled.
 - Manual alternative for a new database: run `supabase-schema.sql` in the Supabase SQL editor.
 - Existing database: run `migrations/20260919_formation_catalog.sql`, then `migrations/20260920_direct_checkout.sql`.
 - The new migration enables RLS and revokes access from public roles. Server routes use the service-role credential.
