@@ -1,18 +1,19 @@
 'use client';
 
-import { Suspense, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { Suspense, useRef, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useLanguage } from '@/i18n/LanguageContext';
 import TopNav from '@/components/TopNav';
 import Footer from '@/components/Footer';
 import FormationSelector from '@/components/FormationSelector';
 import FormationSummary from '@/components/FormationSummary';
-import { DEFAULT_STATE, EntityType, getFormationQuote } from '@/lib/formation';
+import { DEFAULT_STATE, EntityType, formatUsd, getFormationQuote } from '@/lib/formation';
 
-function FormationRequest() {
+function FormationCheckout() {
   const { t, lang } = useLanguage();
   const params = useSearchParams();
+  const router = useRouter();
   const initialEntity: EntityType = params.get('entity') === 'S-Corp' ? 'S-Corp' : 'LLC';
   const initialState = params.get('state') || DEFAULT_STATE;
   const [entity, setEntity] = useState<EntityType>(initialEntity);
@@ -21,7 +22,8 @@ function FormationRequest() {
   const [ownership, setOwnership] = useState('single');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(false);
-  const [reference, setReference] = useState<string | null>(null);
+  const orderToken = useRef<string | null>(null);
+  const [acceptTerms, setAcceptTerms] = useState(false);
   const [formData, setFormData] = useState({ customerName: '', customerEmail: '', customerPhone: '', llcName: '', designator: initialEntity === 'LLC' ? 'LLC' : 'Inc.' });
 
   async function handleSubmit(event: React.FormEvent) {
@@ -29,27 +31,26 @@ function FormationRequest() {
     setIsLoading(true);
     setError(false);
     try {
+      if (!orderToken.current) {
+        orderToken.current = Array.from(crypto.getRandomValues(new Uint8Array(32)), byte => byte.toString(16).padStart(2, '0')).join('');
+      }
       const response = await fetch('/api/orders', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...formData, entity, state, sCorpEligible: eligible, ownership: entity === 'LLC' ? ownership : null, locale: lang }),
+        body: JSON.stringify({ orderToken: orderToken.current, acceptTerms, ...formData, entity, state, sCorpEligible: eligible, ownership: entity === 'LLC' ? ownership : null, locale: lang }),
       });
       const data = await response.json();
       if (!response.ok || typeof data.orderId !== 'string') throw new Error('Request failed');
-      setReference(data.orderId);
+      sessionStorage.setItem(`order:${data.orderId}`, orderToken.current);
+      const payment = await fetch('/api/orders/payment', { method: 'POST', headers: { Authorization: `Bearer ${orderToken.current}` } }).catch(() => null);
+      const session = payment?.ok ? await payment.json().catch(() => null) : null;
+      if (session?.url) window.location.assign(session.url);
+      else router.push(`/checkout/confirmation?order=${encodeURIComponent(data.orderId)}&payment=unavailable`);
     } catch {
       setError(true);
     } finally {
       setIsLoading(false);
     }
   }
-
-  if (reference) return <main className="confirm-page"><div className="card confirm-card" role="status">
-    <h1 className="t-h2">{t('catalog.received')}</h1>
-    <p className="formation-note">{t('catalog.receivedBody')}</p>
-    <p>{t('catalog.reference')}: {reference}</p>
-    <p className="formation-note">{t('catalog.contact')}</p>
-    <Link href="/" className="btn btn-outline">{t('catalog.home')}</Link>
-  </div></main>;
 
   return <main className="checkout-layout">
     <div className="checkout-form-side">
@@ -99,9 +100,13 @@ function FormationRequest() {
               {(entity === 'LLC' ? ['LLC', 'L.L.C.'] : ['Inc.', 'Corporation']).map(value => <option key={value}>{value}</option>)}
             </select>
           </div>
+          <label className="formation-checkbox">
+            <input type="checkbox" required checked={acceptTerms} onChange={e => setAcceptTerms(e.target.checked)} />
+            <span>{t('catalog.acceptTerms')} <Link href="/terms" target="_blank">{t('footer.terms')}</Link>, <Link href="/privacy" target="_blank">{t('footer.privacy')}</Link>, <Link href="/refunds" target="_blank">{t('footer.refunds')}</Link>.</span>
+          </label>
           {error && <p className="formation-error" role="alert">{t('catalog.error')} <a href="mailto:support@justmyllc.com">Email</a></p>}
-          <button type="submit" className="btn btn-accent btn-xl" style={{ width: '100%', justifyContent: 'center' }} disabled={isLoading || (entity === 'S-Corp' && !eligible)}>
-            {isLoading ? t('catalog.sending') : t('catalog.submit')}
+          <button type="submit" className="btn btn-accent btn-xl" style={{ width: '100%', justifyContent: 'center' }} disabled={isLoading || !acceptTerms || (entity === 'S-Corp' && !eligible)}>
+            {isLoading ? t('catalog.sending') : `${t('catalog.submit')} · ${formatUsd(getFormationQuote(state, entity)!.total)}`}
           </button>
         </fieldset>
       </form>
@@ -117,6 +122,6 @@ function FormationRequest() {
 
 export default function CheckoutPage() {
   return <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
-    <TopNav /><Suspense fallback={<main className="confirm-page">…</main>}><FormationRequest /></Suspense><Footer />
+    <TopNav /><Suspense fallback={<main className="confirm-page">…</main>}><FormationCheckout /></Suspense><Footer />
   </div>;
 }

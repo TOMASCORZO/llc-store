@@ -180,7 +180,7 @@ export default function HomePage() {
                     <h2 className="t-h2">{t('faq.title')}</h2>
                     
                     <div className="faq-list">
-                        {[1, 2, 3, 4, 5].map((num) => (
+                        {[1, 2, 3, 4, 5, 6].map((num) => (
                             <div key={num} className={`faq-item ${openFaq === num ? 'open' : ''}`}>
                                 <button 
                                     className="faq-question"

@@ -20,12 +20,12 @@ The policies are in English, marked with `lang="en"`; navigation labels remain l
 
 ## Still needed before review
 
-1. Activate and verify inbound support at `support@justmyllc.com`. The owner confirmed it currently does not receive mail and intends to configure it with Resend. Outbound email delivery alone does not establish a working inbound support workflow. Test receiving, routing and replying; no external test email has been sent by this task.
+1. Activate and verify inbound support at `support@justmyllc.com`. The owner subsequently reported configuring Resend; inbound support has not been independently verified. Outbound email delivery alone does not establish a working inbound support workflow. Test receiving, routing and replying; no external test email has been sent by this task.
 2. Confirm service eligibility directly with Creem and provide any required processor history, refund/chargeback data and accurate onboarding identity. No application has been submitted.
 3. Supply required legal/controller information to Creem privately; determine any legally required public disclosures before launch. Omission here must not be represented as proof of legal or merchant-review completeness.
-4. Deploy the actual production URL and make it publicly accessible. A GitHub push or localhost preview is not itself proof of a working public deployment.
-5. Configure the existing database and apply the formation migration. Verify that real requests are saved, reviewed and fulfilled; current missing credentials yield 503.
-6. After approval, implement and test payment collection, verified webhooks, receipts and refunds. The current request form does not take payment. It does not waive withdrawal rights or authorize immediate paid performance.
+4. Configure the nonempty database credentials and apply the migrations in `docs/payment-setup.md`. Production variables exist but the service-role key and Postgres credentials were empty when checked.
+5. The direct order flow and Creem checkout/webhook integration are implemented. Configure a one-time USD product, API key, webhook secret, APP_URL and test/live mode. Complete a sandbox purchase and verify the saved payment before enabling live collection.
+6. Establish staff fulfillment, receipts, refund/dispute reconciliation and order recovery. The payment redirect alone never marks an order paid; filing requires complete information and separate authorization.
 7. For future subscriptions, implement accessible cancellation before enabling recurring charges.
 
 Approval is not guaranteed and these pages do not resolve the service-eligibility, identity, mailbox or production-readiness requirements.
