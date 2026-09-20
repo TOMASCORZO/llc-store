@@ -11,10 +11,11 @@
 
 ## Database
 
-Production inspection on 2026-09-20 found a project URL but **empty** `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_SECRET_KEY`, database password and Postgres connection strings. No live order was inserted and no remote migration could be applied.
+Vercel stores the private database variables as sensitive values, so `vercel env pull` omits them. Verify credentials from the deployed server, not from the downloaded placeholder values. The migration runner can use these credentials inside Vercel without exporting them.
 
 - Set `NEXT_PUBLIC_SUPABASE_URL` and a nonempty `SUPABASE_SERVICE_ROLE_KEY` in Vercel. Keep the service key server-only.
-- New database: run `supabase-schema.sql` in the Supabase SQL editor.
+- For Vercel deployments, set `RUN_DB_MIGRATIONS=1` in production. The build runs the schema migrations using the existing `POSTGRES_URL_NON_POOLING` or `POSTGRES_URL`, records applied migrations and verifies the order columns. A migration failure stops deployment.
+- Manual alternative for a new database: run `supabase-schema.sql` in the Supabase SQL editor.
 - Existing database: run `migrations/20260919_formation_catalog.sql`, then `migrations/20260920_direct_checkout.sql`.
 - The new migration enables RLS and revokes access from public roles. Server routes use the service-role credential.
 - Historical `pending_review` records are retained, not converted into authorized purchases. New orders always start `pending_payment`.
