@@ -48,3 +48,9 @@ Until configuration is complete, saved orders remain unpaid and checkout display
 - Process refunds through the payment provider, record the resolution privately and reconcile the order manually. Automatic refund/dispute handling and a staff admin UI are outside this implementation. Monitor the provider dashboard for disputes and refunds before fulfillment.
 
 API references: [Create checkout](https://docs.creem.io/api-reference/endpoint/create-checkout), [webhook signatures and events](https://docs.creem.io/code/webhooks).
+
+## Production verification — September 20, 2026
+
+The deployed migration runner verified the order schema using Vercel's sensitive integration credentials. A production API smoke test created the clearly labeled `INTERNAL TEST DO NOT FILE` order `037e13a1-c618-4367-957f-da543765bbab` for $102, with status `pending_payment`. A retry returned the same ID (HTTP 200); authenticated status returned the stored amount, and an unauthenticated lookup returned 401. Payment creation correctly returned 503 because Creem credentials are not configured. This QA order is unpaid and must not be fulfilled. No email, filing or charge was initiated.
+
+`APP_URL=https://www.justmyllc.com` and `CREEM_TEST_MODE=true` are configured in Vercel. Next: configure matching sandbox `CREEM_API_KEY`, `CREEM_PRODUCT_ID` and `CREEM_WEBHOOK_SECRET`, redeploy, and complete a sandbox transaction. Switch to approved live credentials and `CREEM_TEST_MODE=false` only after that verification. Eleven automated tests, lint and production build passed; a real provider transaction has not yet been tested.
