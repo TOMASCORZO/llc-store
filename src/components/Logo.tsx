@@ -1,26 +1,20 @@
-import React from 'react';
+import Image from 'next/image';
+import wordmark from '../../public/brand/logo.png';
 
 interface LogoProps {
     size?: number;
-    color?: string;
-    showText?: boolean;
 }
 
-export default function Logo({ size = 20, color, showText = true }: LogoProps) {
+export default function Logo({ size = 20 }: LogoProps) {
+    const height = size * 2;
+
     return (
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 9 }}>
-            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-label="Just My LLC">
-                <rect x="2" y="2" width="20" height="20" rx="5" fill={color || 'var(--ink)'} />
-                <path d="M7 12 l4 4 l6 -8" stroke="#fff" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            {showText && (
-                <span style={{
-                    fontSize: 16, fontWeight: 600, letterSpacing: '-0.02em',
-                    color: color || 'var(--ink)',
-                }}>
-                    Just My LLC
-                </span>
-            )}
-        </span>
+        <Image
+            src={wordmark}
+            alt="Just My LLC"
+            width={Math.round(height * wordmark.width / wordmark.height)}
+            height={height}
+            style={{ display: 'block', width: 'auto', height, maxWidth: '100%', objectFit: 'contain' }}
+        />
     );
 }
