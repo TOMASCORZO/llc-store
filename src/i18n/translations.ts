@@ -1,5 +1,6 @@
 export const translations = {
   "en": {
+    "product": {"navigation": "Product", "comparison": "Compare plans", "packages": "Business formation packages", "plan": "Plan"},
     "nav": {
       "features": "Features",
       "process": "How it Works",
@@ -154,6 +155,7 @@ export const translations = {
     }
   },
   "es": {
+    "product": {"navigation": "Producto", "comparison": "Compará los planes", "packages": "Planes de constitución", "plan": "Plan"},
     "nav": {
       "features": "Características",
       "process": "Proceso",
@@ -308,6 +310,7 @@ export const translations = {
     }
   },
   "pt": {
+    "product": {"navigation": "Produto", "comparison": "Compare os planos", "packages": "Planos de constituição", "plan": "Plano"},
     "nav": {
       "features": "Recursos",
       "process": "Como Funciona",
@@ -462,6 +465,7 @@ export const translations = {
     }
   },
   "fr": {
+    "product": {"navigation": "Produit", "comparison": "Comparer les offres", "packages": "Offres de création", "plan": "Offre"},
     "nav": {
       "features": "Fonctionnalités",
       "process": "Comment ça marche",
@@ -616,6 +620,7 @@ export const translations = {
     }
   },
   "de": {
+    "product": {"navigation": "Produkt", "comparison": "Pakete vergleichen", "packages": "Gründungspakete", "plan": "Paket"},
     "nav": {
       "features": "Funktionen",
       "process": "Ablauf",
@@ -770,6 +775,7 @@ export const translations = {
     }
   },
   "zh": {
+    "product": {"navigation": "产品", "comparison": "比较方案", "packages": "公司成立方案", "plan": "方案"},
     "nav": {
       "features": "产品特点",
       "process": "办理流程",

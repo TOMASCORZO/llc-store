@@ -7,6 +7,7 @@ import { useLanguage } from '@/i18n/LanguageContext';
 import Link from 'next/link';
 import FormationSelector from '@/components/FormationSelector';
 import FormationSummary from '@/components/FormationSummary';
+import PlanComparison from '@/components/PlanComparison';
 import { DEFAULT_STATE, EntityType } from '@/lib/formation';
 
 function CheckIcon() {
@@ -140,6 +141,7 @@ export default function HomePage() {
 
             {/* ─── Pricing ─────────────────────────────────────────────── */}
             <section id="pricing" className="pricing-section">
+                <div className="home-plan-comparison"><PlanComparison /></div>
                 <div className="pricing-inner">
                     <h2 className="t-h2">{t('pricing.title')}</h2>
                     

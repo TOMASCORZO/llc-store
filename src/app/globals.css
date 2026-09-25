@@ -899,3 +899,47 @@ html { scroll-padding-top: 100px; }
     .nav-links, .nav-actions { display: none; }
     .mobile-menu { display: block; }
 }
+
+/* Product landing: shared brand tokens and the existing formation catalog. */
+.product-hero { position: relative; overflow: hidden; padding: 166px 32px 76px; border-bottom: 1px solid var(--line); text-align: center; }
+.product-grid { position: absolute; inset: 0; opacity: .5; mask-image: linear-gradient(black, transparent 90%); pointer-events: none; }
+.product-hero-inner { position: relative; max-width: 1040px; margin: auto; }
+.product-hero h1 { font-size: clamp(48px, 7vw, 88px); line-height: 1.08; }
+.product-hero h1 span { color: var(--accent); }
+.product-subtitle { margin-top: 24px; font-size: 22px; color: var(--ink-3); }
+.formation-selector-product { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; max-width: 900px; margin: 52px auto 0; counter-reset: formation-step; }
+.formation-selector-product .form-group { position: relative; margin: 0; padding: 22px 24px 20px 88px; border: 1px solid var(--accent-line); border-radius: var(--radius-lg); background: var(--bg-elev); box-shadow: var(--shadow-md); overflow: hidden; }
+.formation-selector-product .form-group::before { counter-increment: formation-step; content: counter(formation-step, decimal-leading-zero); position: absolute; inset: 0 auto 0 0; width: 64px; display: grid; place-items: center; background: var(--accent); color: white; font: 500 20px var(--font-mono); }
+.formation-selector-product .form-group:focus-within { outline: 2px solid var(--accent); outline-offset: 4px; }
+.formation-selector-product label { margin-bottom: 6px; font-size: 14px; color: var(--ink-3); }
+.formation-selector-product select { padding: 0 28px 0 0; min-height: 36px; font-size: 24px; font-weight: 500; border: 0; border-radius: 0; box-shadow: none; background-color: transparent; }
+.formation-selector-product select:focus { outline: none; box-shadow: none; }
+.formation-selector-product .formation-note { grid-column: 1 / -1; margin: 0; }
+.product-plans { max-width: 1200px; margin: 0 auto; padding: 64px 32px 88px; }
+.product-plans h2 { margin-bottom: 28px; }
+.home-plan-comparison { max-width: 1136px; margin: 0 auto 64px; }
+.plan-comparison { overflow: hidden; border: 1px solid var(--line-strong); border-radius: var(--radius-lg); background: var(--bg-elev); box-shadow: var(--shadow-sm); }
+.plan-comparison table { width: 100%; table-layout: fixed; border-collapse: collapse; }
+.plan-comparison th { width: 23%; padding: 32px 16px; text-align: center; font-weight: 500; }
+.plan-comparison th.plan-comparison-label { width: 31%; padding: 32px; text-align: left; font-size: 24px; font-weight: 600; line-height: 1.35; }
+.plan-comparison th + th, .plan-comparison td + td { border-left: 1px solid var(--line); }
+.plan-comparison th:nth-child(2) { background: var(--accent-soft); }
+.plan-comparison-name { display: block; margin-bottom: 14px; color: var(--ink-3); font: 500 13px var(--font-mono); text-transform: uppercase; letter-spacing: .04em; }
+.plan-comparison-price { display: block; font: 500 54px/1.2 var(--font-mono); letter-spacing: -.05em; }
+.plan-comparison-price > span { font-size: 30px; vertical-align: top; line-height: 1.6; margin-right: 3px; color: var(--ink-3); }
+.plan-comparison td { height: 64px; border-top: 1px solid var(--line); }
+@media (max-width: 768px) {
+  .product-hero { padding: 128px 20px 52px; }
+  .product-subtitle { font-size: 18px; margin-top: 18px; }
+  .formation-selector-product { grid-template-columns: 1fr; gap: 16px; margin-top: 36px; }
+  .formation-selector-product .form-group { padding: 17px 18px 17px 78px; }
+  .formation-selector-product .form-group::before { width: 56px; }
+  .formation-selector-product select { font-size: 22px; }
+  .product-plans { padding: 40px 20px 56px; }
+  .plan-comparison th { padding: 22px 4px; width: 24%; }
+  .plan-comparison th.plan-comparison-label { width: 28%; padding: 14px 10px; font-size: 14px; overflow-wrap: anywhere; }
+  .plan-comparison-name { font-size: 10px; letter-spacing: 0; }
+  .plan-comparison-price { font-size: 32px; }
+  .plan-comparison-price > span { font-size: 19px; margin-right: 1px; }
+  .plan-comparison td { height: 52px; }
+}

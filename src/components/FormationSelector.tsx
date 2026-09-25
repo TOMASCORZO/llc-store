@@ -4,14 +4,15 @@ import { useId } from 'react';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { DEFAULT_STATE, EntityType, getStates } from '@/lib/formation';
 
-export default function FormationSelector({ entity, state, onChange }: {
+export default function FormationSelector({ entity, state, onChange, variant = 'default' }: {
+  variant?: 'default' | 'product';
   entity: EntityType;
   state: string;
   onChange: (entity: EntityType, state: string) => void;
 }) {
   const { t } = useLanguage();
   const id = useId();
-  return <div className="formation-selector">
+  return <div className={`formation-selector${variant === 'product' ? ' formation-selector-product' : ''}`}>
     <div className="form-group">
       <label htmlFor={`${id}-entity`}>{t('catalog.entity')}</label>
       <select id={`${id}-entity`} value={entity} onChange={event => {

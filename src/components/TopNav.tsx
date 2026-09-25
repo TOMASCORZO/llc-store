@@ -12,7 +12,7 @@ const LANGUAGES: { code: LanguageCode; label: string }[] = [
     { code: 'pt', label: 'Português' }, { code: 'fr', label: 'Français' },
     { code: 'de', label: 'Deutsch' }, { code: 'zh', label: '中文' },
 ];
-const serviceLinks = [['/#includes', 'nav.features'], ['/#process', 'nav.process'], ['/#pricing', 'nav.pricing'], ['/#faq', 'nav.faq']];
+const serviceLinks = [['/product', 'product.navigation'], ['/#includes', 'nav.features'], ['/#process', 'nav.process'], ['/#pricing', 'nav.pricing'], ['/#faq', 'nav.faq']];
 const companyLinks = [['/about', 'footer.about'], ['/contact', 'footer.contact']];
 const policyLinks = [['/terms', 'footer.terms'], ['/privacy', 'footer.privacy'], ['/refunds', 'footer.refunds']];
 
