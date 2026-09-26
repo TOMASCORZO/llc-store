@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useLanguage } from '@/i18n/LanguageContext';
 import OrderUpdatesConsent from '@/components/OrderUpdatesConsent';
+import { SavedContact, readSavedContact, rememberRegisteredContact, forgetSavedContact } from '@/lib/saved-contact';
 import ContactFields from '@/components/ContactFields';
 import { ContactDetails } from '@/lib/contact';
 import Logo from '@/components/Logo';
@@ -38,6 +39,8 @@ function FormationCheckout() {
   const [entity, setEntity] = useState<EntityType>(initialEntity);
   const [state, setState] = useState(getFormationQuote(initialState, initialEntity) ? initialState : DEFAULT_STATE);
   const [contact, setContact] = useState<ContactDetails>({ firstName: '', lastName: '', country: '', street: '', addressLine2: '', city: '', region: '', postalCode: '' });
+  const [savedContact, setSavedContact] = useState<SavedContact | null>(null);
+  const [usingSavedContact, setUsingSavedContact] = useState(false);
   const [orderUpdatesConsent, setOrderUpdatesConsent] = useState(true);
   const [eligible, setEligible] = useState(false);
   const [ownership, setOwnership] = useState('single');
@@ -50,6 +53,7 @@ function FormationCheckout() {
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     if (step < 3) {
+      if (step === 1) setSavedContact(readSavedContact());
       setStep(step + 1);
       return;
     }
@@ -65,6 +69,7 @@ function FormationCheckout() {
       });
       const data = await response.json();
       if (!response.ok || typeof data.orderId !== 'string') throw new Error('Request failed');
+      rememberRegisteredContact(contact, formData.customerEmail, formData.customerPhone);
       sessionStorage.setItem(`order:${data.orderId}`, orderToken.current);
       const payment = await fetch('/api/orders/payment', { method: 'POST', headers: { Authorization: `Bearer ${orderToken.current}` } }).catch(() => null);
       const session = payment?.ok ? await payment.json().catch(() => null) : null;
@@ -116,14 +121,26 @@ function FormationCheckout() {
           <StateFilingTime state={state} entity={entity} />
           </>}
           {step === 2 && <>
-          <ContactFields value={contact} onChange={setContact} />
+          <ContactFields value={contact} onChange={value => { setContact(value); setUsingSavedContact(false); }} savedContactControl={savedContact && <div className="saved-contact">
+            <label className="saved-contact-choice"><input type="checkbox" checked={usingSavedContact} onChange={event => {
+              setUsingSavedContact(event.target.checked);
+              if (event.target.checked) {
+                setContact({ ...savedContact.contact });
+                setFormData(data => ({ ...data, customerEmail: savedContact.email, customerPhone: savedContact.phone }));
+              } else {
+                setContact({ firstName: '', lastName: '', country: '', street: '', addressLine2: '', city: '', region: '', postalCode: '' });
+                setFormData(data => ({ ...data, customerEmail: '', customerPhone: '' }));
+              }
+            }} /><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><circle cx="12" cy="7" r="4"/><path d="M4 22v-3a8 8 0 0 1 16 0v3"/></svg><span>{savedContact.contact.firstName} {savedContact.contact.lastName}<small>{lang === 'es' ? 'Usar contacto guardado en este navegador' : 'Use contact saved in this browser'}</small></span></label>
+            <button type="button" className="saved-contact-forget" onClick={() => { forgetSavedContact(); setSavedContact(null); setUsingSavedContact(false); }}>{lang === 'es' ? 'Olvidar' : 'Forget'}</button>
+          </div>} />
           <div className="contact-channels">
           <div className="form-row">
             <div className="form-group"><label htmlFor="email">{t('catalog.email')}</label>
-              <input id="email" type="email" autoComplete="email" required maxLength={254} value={formData.customerEmail} onChange={e => setFormData({ ...formData, customerEmail: e.target.value })} />
+              <input id="email" type="email" autoComplete="email" required maxLength={254} value={formData.customerEmail} onChange={e => { setUsingSavedContact(false); setFormData({ ...formData, customerEmail: e.target.value }); }} />
             </div>
             <div className="form-group"><label htmlFor="phone">{t('catalog.phone')}</label>
-              <input id="phone" required={orderUpdatesConsent} pattern={orderUpdatesConsent ? ".*\\S.*" : undefined} type="tel" autoComplete="tel" maxLength={40} value={formData.customerPhone} onChange={e => setFormData({ ...formData, customerPhone: e.target.value })} />
+              <input id="phone" required={orderUpdatesConsent} pattern={orderUpdatesConsent ? ".*\\S.*" : undefined} type="tel" autoComplete="tel" maxLength={40} value={formData.customerPhone} onChange={e => { setUsingSavedContact(false); setFormData({ ...formData, customerPhone: e.target.value }); }} />
             </div>
           </div>
           </div>

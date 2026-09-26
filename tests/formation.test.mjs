@@ -199,3 +199,26 @@ test('order update consent is explicit, requires a phone and is stored with its 
   assert.equal(declined.inserted().contact_details.orderUpdatesConsent, false);
   assert.equal(declined.inserted().contact_details.orderUpdatesConsentAt, null);
 });
+
+test('saved contact is absent for new devices and survives registration with validated fields only', () => {
+  const storage = new Map();
+  const localStorage = { getItem: key => storage.get(key) ?? null, setItem: (key, value) => storage.set(key, value), removeItem: key => storage.delete(key) };
+  const saved = load('src/lib/saved-contact.ts', { './contact': contactModule }, {}, { localStorage });
+  assert.equal(saved.readSavedContact(), null);
+  saved.rememberRegisteredContact(contactDetails, 'test@example.com', '+15555550123');
+  assert.equal(saved.readSavedContact().contact.firstName, 'Example');
+  assert.equal(saved.readSavedContact().email, 'test@example.com');
+  saved.forgetSavedContact();
+  assert.equal(saved.readSavedContact(), null);
+  storage.set(saved.SAVED_CONTACT_KEY, '{broken');
+  assert.equal(saved.readSavedContact(), null);
+  storage.set(saved.SAVED_CONTACT_KEY, JSON.stringify({ version: 1, contact: contactDetails, email: 'invalid', phone: '' }));
+  assert.equal(saved.readSavedContact(), null);
+});
+test('unavailable browser storage never blocks registration', () => {
+  const localStorage = { getItem: () => { throw Error('blocked'); }, setItem: () => { throw Error('blocked'); }, removeItem: () => { throw Error('blocked'); } };
+  const saved = load('src/lib/saved-contact.ts', { './contact': contactModule }, {}, { localStorage });
+  assert.equal(saved.readSavedContact(), null);
+  assert.doesNotThrow(() => saved.rememberRegisteredContact(contactDetails, 'test@example.com', ''));
+  assert.doesNotThrow(() => saved.forgetSavedContact());
+});

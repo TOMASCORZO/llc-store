@@ -1,7 +1,8 @@
 'use client';
+import type { ReactNode } from 'react';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { COUNTRY_CODES, ContactDetails } from '@/lib/contact';
-export default function ContactFields({ value, onChange }: { value: ContactDetails; onChange: (value: ContactDetails) => void }) {
+export default function ContactFields({ value, onChange, savedContactControl }: { savedContactControl?: ReactNode; value: ContactDetails; onChange: (value: ContactDetails) => void }) {
   const { lang } = useLanguage();
   const es = lang === 'es';
   const labels = es ? ['Nombre','Apellido','País','Dirección','Departamento, piso, etc. (opcional)','Ciudad','Estado / provincia (si corresponde)','Código postal (si corresponde)'] : ['First name','Last name','Country','Street address','Apartment, suite, etc. (optional)','City','State / province (if applicable)','Postal code (if applicable)'];
@@ -11,6 +12,7 @@ export default function ContactFields({ value, onChange }: { value: ContactDetai
   }
   return <div lang={es ? 'es' : 'en'}>
     <p className="contact-intro">{es ? 'Usaremos estos datos para enviarte actualizaciones del pedido y los documentos de tu empresa.' : 'We’ll use these details to send order updates and share your company documents.'}</p>
+    {savedContactControl}
     <div className="form-row">{field('firstName',labels[0],'given-name',90)}{field('lastName',labels[1],'family-name',90)}</div>
     <div className="contact-address">
       <div className="form-group"><label htmlFor="contact-country">{labels[2]}</label><select id="contact-country" autoComplete="country" required value={value.country} onChange={e=>onChange({...value,country:e.target.value})}><option value="" disabled>{es ? 'Seleccioná tu país' : 'Select your country'}</option>{COUNTRY_CODES.map(code=>({code,name:names.of(code) || code})).sort((a,b)=>a.name.localeCompare(b.name,lang)).map(({code,name})=><option key={code} value={code}>{name}</option>)}</select></div>
