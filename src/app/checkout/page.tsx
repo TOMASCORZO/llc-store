@@ -7,6 +7,7 @@ import { useLanguage } from '@/i18n/LanguageContext';
 import Logo from '@/components/Logo';
 import Footer from '@/components/Footer';
 import FormationSelector from '@/components/FormationSelector';
+import StateFilingTime, { filingCopy } from '@/components/StateFilingTime';
 import FormationSummary from '@/components/FormationSummary';
 import { DEFAULT_STATE, EntityType, formatUsd, getFormationQuote } from '@/lib/formation';
 
@@ -22,7 +23,8 @@ const setupCopy = {
 
 function FormationCheckout() {
   const { t, lang } = useLanguage();
-  const copy = setupCopy[lang];
+  const baseCopy = setupCopy[lang];
+  const copy = { ...baseCopy, steps: [baseCopy.steps[0], filingCopy[lang].title, ...baseCopy.steps.slice(1)], remaining: [filingCopy[lang].remaining, ...baseCopy.remaining] };
   const [step, setStep] = useState(0);
   const stepHeading = useRef<HTMLHeadingElement>(null);
   useEffect(() => { stepHeading.current?.focus({ preventScroll: true }); window.scrollTo({ top: 0, behavior: 'instant' }); }, [step]);
@@ -42,7 +44,7 @@ function FormationCheckout() {
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
-    if (step < 2) {
+    if (step < 3) {
       setStep(step + 1);
       return;
     }
@@ -74,7 +76,7 @@ function FormationCheckout() {
     <header className="setup-header">
       <Link href="/" aria-label={t('nav.home')}><Logo size={24} /></Link>
       <nav className="setup-progress" aria-label={copy.progress}>
-        <p className="setup-progress-caption" aria-live="polite">{copy.progress} · {step + 1}/3 <span>{copy.remaining[step]}</span></p>
+        <p className="setup-progress-caption" aria-live="polite">{copy.progress} · {step + 1}/{copy.steps.length} <span>{copy.remaining[step]}</span></p>
         <ol>{copy.steps.map((label, index) => <li key={label} className={index < step ? 'complete' : index === step ? 'current' : ''} aria-current={index === step ? 'step' : undefined}>
           <span className="setup-step-circle" aria-hidden="true">{index < step ? '✓' : index + 1}</span><span>{label}</span>
         </li>)}</ol>
@@ -106,6 +108,9 @@ function FormationCheckout() {
             setEntity(nextEntity); setState(nextState); setEligible(false);
             setFormData(data => ({ ...data, designator: nextEntity === 'LLC' ? 'LLC' : 'Inc.' }));
           }} />
+          <StateFilingTime state={state} entity={entity} />
+          </>}
+          {step === 2 && <>
           {entity === 'LLC' && <div className="form-group">
             <label htmlFor="ownership">{t('catalog.ownership')}</label>
             <select id="ownership" value={ownership} onChange={e => setOwnership(e.target.value)}>
@@ -129,7 +134,7 @@ function FormationCheckout() {
             </div>
           </div>
           </>}
-          {step === 2 && <>
+          {step === 3 && <>
           <dl className="setup-review">
             <div><dt>{t('catalog.company')}</dt><dd>{formData.llcName} {formData.designator}</dd></div>
             <div><dt>{t('catalog.name')}</dt><dd>{formData.customerName}</dd></div>
@@ -145,8 +150,8 @@ function FormationCheckout() {
           {error && <p className="formation-error" role="alert">{t('catalog.error')} <a href="mailto:support@justmyllc.com">Email</a></p>}
           <div className="setup-actions">
             {step === 0 ? <Link href={`/product?entity=${encodeURIComponent(entity)}&state=${encodeURIComponent(state)}`} className="btn btn-outline">← {copy.back}</Link> : <button type="button" className="btn btn-outline" onClick={() => { setError(false); setStep(step - 1); }}>← {copy.back}</button>}
-            <button type="submit" className="btn btn-accent btn-xl" disabled={isLoading || (step === 2 && (!acceptTerms || (entity === 'S-Corp' && !eligible)))}>
-              {step < 2 ? `${copy.next} →` : isLoading ? t('catalog.sending') : `${t('catalog.submit')} · ${formatUsd(getFormationQuote(state, entity)!.total)}`}
+            <button type="submit" className="btn btn-accent btn-xl" disabled={isLoading || (step === 3 && (!acceptTerms || (entity === 'S-Corp' && !eligible)))}>
+              {step < 3 ? `${copy.next} →` : isLoading ? t('catalog.sending') : `${t('catalog.submit')} · ${formatUsd(getFormationQuote(state, entity)!.total)}`}
             </button>
           </div>
         </fieldset>

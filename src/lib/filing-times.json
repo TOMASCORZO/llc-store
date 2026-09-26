@@ -1,0 +1,1820 @@
+[
+  {
+    "state": "Alabama",
+    "entity": "LLC",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Alabama",
+    "entity": "S-Corp",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Alaska",
+    "entity": "LLC",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Alaska",
+    "entity": "S-Corp",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Arizona",
+    "entity": "LLC",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Arizona",
+    "entity": "S-Corp",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Arkansas",
+    "entity": "LLC",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Arkansas",
+    "entity": "S-Corp",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "California",
+    "entity": "LLC",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "California",
+    "entity": "S-Corp",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Colorado",
+    "entity": "LLC",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Colorado",
+    "entity": "S-Corp",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Connecticut",
+    "entity": "LLC",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Connecticut",
+    "entity": "S-Corp",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Delaware",
+    "entity": "LLC",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Delaware",
+    "entity": "S-Corp",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Florida",
+    "entity": "LLC",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Florida",
+    "entity": "S-Corp",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Georgia",
+    "entity": "LLC",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Georgia",
+    "entity": "S-Corp",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Hawaii",
+    "entity": "LLC",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Hawaii",
+    "entity": "S-Corp",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Idaho",
+    "entity": "LLC",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Idaho",
+    "entity": "S-Corp",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Illinois",
+    "entity": "LLC",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Illinois",
+    "entity": "S-Corp",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Indiana",
+    "entity": "LLC",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Indiana",
+    "entity": "S-Corp",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Iowa",
+    "entity": "LLC",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Iowa",
+    "entity": "S-Corp",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Kansas",
+    "entity": "LLC",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Kansas",
+    "entity": "S-Corp",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Kentucky",
+    "entity": "LLC",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Kentucky",
+    "entity": "S-Corp",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Louisiana",
+    "entity": "LLC",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Maine",
+    "entity": "LLC",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Maine",
+    "entity": "S-Corp",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Maryland",
+    "entity": "LLC",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Maryland",
+    "entity": "S-Corp",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Massachusetts",
+    "entity": "LLC",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Massachusetts",
+    "entity": "S-Corp",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Michigan",
+    "entity": "LLC",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Michigan",
+    "entity": "S-Corp",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Minnesota",
+    "entity": "LLC",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Minnesota",
+    "entity": "S-Corp",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Mississippi",
+    "entity": "LLC",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Mississippi",
+    "entity": "S-Corp",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Missouri",
+    "entity": "LLC",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Missouri",
+    "entity": "S-Corp",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Montana",
+    "entity": "LLC",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Montana",
+    "entity": "S-Corp",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Nebraska",
+    "entity": "LLC",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Nebraska",
+    "entity": "S-Corp",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Nevada",
+    "entity": "LLC",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Nevada",
+    "entity": "S-Corp",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "New Hampshire",
+    "entity": "LLC",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "New Hampshire",
+    "entity": "S-Corp",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "New Jersey",
+    "entity": "LLC",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "New Jersey",
+    "entity": "S-Corp",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "New Mexico",
+    "entity": "LLC",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "New Mexico",
+    "entity": "S-Corp",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "New York",
+    "entity": "LLC",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "New York",
+    "entity": "S-Corp",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "North Carolina",
+    "entity": "LLC",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "North Carolina",
+    "entity": "S-Corp",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "North Dakota",
+    "entity": "LLC",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "North Dakota",
+    "entity": "S-Corp",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Ohio",
+    "entity": "LLC",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Ohio",
+    "entity": "S-Corp",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Oklahoma",
+    "entity": "LLC",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Oklahoma",
+    "entity": "S-Corp",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Oregon",
+    "entity": "LLC",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Oregon",
+    "entity": "S-Corp",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Pennsylvania",
+    "entity": "LLC",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Pennsylvania",
+    "entity": "S-Corp",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Rhode Island",
+    "entity": "LLC",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Rhode Island",
+    "entity": "S-Corp",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "South Carolina",
+    "entity": "LLC",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "South Carolina",
+    "entity": "S-Corp",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "South Dakota",
+    "entity": "LLC",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "South Dakota",
+    "entity": "S-Corp",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Tennessee",
+    "entity": "LLC",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Tennessee",
+    "entity": "S-Corp",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Texas",
+    "entity": "LLC",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Texas",
+    "entity": "S-Corp",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Utah",
+    "entity": "LLC",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Utah",
+    "entity": "S-Corp",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Vermont",
+    "entity": "LLC",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Vermont",
+    "entity": "S-Corp",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Virginia",
+    "entity": "LLC",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Virginia",
+    "entity": "S-Corp",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Washington",
+    "entity": "LLC",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Washington",
+    "entity": "S-Corp",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Washington DC",
+    "entity": "LLC",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Washington DC",
+    "entity": "S-Corp",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "West Virginia",
+    "entity": "LLC",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "West Virginia",
+    "entity": "S-Corp",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Wisconsin",
+    "entity": "LLC",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Wisconsin",
+    "entity": "S-Corp",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Wyoming",
+    "entity": "LLC",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  },
+  {
+    "state": "Wyoming",
+    "entity": "S-Corp",
+    "standard": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": 0
+    },
+    "expedited": {
+      "availability": "pending",
+      "minBusinessDays": null,
+      "maxBusinessDays": null,
+      "additionalFeeUsd": null
+    },
+    "sourceUrl": null,
+    "verifiedAt": null
+  }
+]
