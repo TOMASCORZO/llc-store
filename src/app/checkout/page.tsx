@@ -38,7 +38,7 @@ function FormationCheckout() {
   const [entity, setEntity] = useState<EntityType>(initialEntity);
   const [state, setState] = useState(getFormationQuote(initialState, initialEntity) ? initialState : DEFAULT_STATE);
   const [contact, setContact] = useState<ContactDetails>({ firstName: '', lastName: '', country: '', street: '', addressLine2: '', city: '', region: '', postalCode: '' });
-  const [orderUpdatesConsent, setOrderUpdatesConsent] = useState(false);
+  const [orderUpdatesConsent, setOrderUpdatesConsent] = useState(true);
   const [eligible, setEligible] = useState(false);
   const [ownership, setOwnership] = useState('single');
   const [isLoading, setIsLoading] = useState(false);
