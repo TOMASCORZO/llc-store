@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import FormationSelector from '@/components/FormationSelector';
 import PlanComparison from '@/components/PlanComparison';
 import { DEFAULT_STATE, EntityType } from '@/lib/formation';
@@ -31,7 +32,19 @@ export default function ProductFormation() {
     </section>
     <section className="product-plans" aria-labelledby="product-plans-heading">
       <h2 className="t-h3" id="product-plans-heading">{t('product.comparison')}</h2>
-      <PlanComparison />
+      <div className="product-comparison-layout">
+        <PlanComparison />
+        <aside className="product-start-card">
+          <dl className="product-start-selection">
+            <div><dt>{t('catalog.entity')}</dt><dd>{entity}</dd></div>
+            <div><dt>{t('catalog.state')}</dt><dd>{state}</dd></div>
+          </dl>
+          <Link href={`/checkout?entity=${encodeURIComponent(entity)}&state=${encodeURIComponent(state)}`} className="btn btn-accent btn-xl product-start-button" lang="en">
+            Get Started
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+          </Link>
+        </aside>
+      </div>
     </section>
     <section id="faq" className="faq-section">
       <div className="faq-inner">

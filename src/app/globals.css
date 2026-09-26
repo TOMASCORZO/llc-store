@@ -943,3 +943,18 @@ html { scroll-padding-top: 100px; }
   .plan-comparison-price > span { font-size: 19px; margin-right: 1px; }
   .plan-comparison td { height: 52px; }
 }
+
+/* Product-only checkout action next to the comparison. */
+.product-plans:has(.product-comparison-layout) { max-width: 1440px; }
+.product-comparison-layout { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 24px; align-items: start; }
+.product-start-card { padding: 24px; background: var(--bg-elev); border: 1px solid var(--line-strong); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); position: sticky; top: 104px; }
+.product-start-selection { display: grid; gap: 20px; margin-bottom: 28px; }
+.product-start-selection dt { font-size: 14px; color: var(--ink-3); margin-bottom: 5px; }
+.product-start-selection dd { font-size: 18px; font-weight: 500; color: var(--ink); overflow-wrap: anywhere; }
+.product-start-button { width: 100%; justify-content: center; }
+.product-start-button:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+@media (max-width: 1050px) {
+  .product-comparison-layout { grid-template-columns: minmax(0, 1fr); }
+  .product-start-card { position: static; }
+  .product-start-selection { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
