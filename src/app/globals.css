@@ -1034,3 +1034,11 @@ html { scroll-padding-top: 100px; }
 .contact-street { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
 .contact-city { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 20px; }
 @media(max-width: 768px) { .contact-street, .contact-city { grid-template-columns: 1fr; gap: 0; } }
+
+.order-updates-notice { margin-top: 28px; padding: 24px; background: var(--accent-soft); border: 1px solid var(--accent-line); border-radius: var(--radius-lg); }
+.order-updates-label { display: flex; align-items: flex-start; gap: 12px; color: var(--ink); font-size: 16px; font-weight: 600; line-height: 1.5; cursor: pointer; }
+.order-updates-label input { width: 20px; height: 20px; flex: 0 0 20px; margin-top: 3px; accent-color: var(--accent); }
+.order-updates-label input:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.order-updates-notice p { margin: 12px 0 0 32px; color: var(--ink-3); font-size: 14px; line-height: 1.7; overflow-wrap: anywhere; }
+.order-updates-notice a { color: var(--accent-deep); text-decoration: underline; text-underline-offset: 3px; }
+@media(max-width: 600px) { .order-updates-notice { padding: 18px; } .order-updates-notice p { margin-left: 0; } }

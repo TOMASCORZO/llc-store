@@ -18,6 +18,10 @@ export async function POST(request: Request) {
   const customerEmail = typeof body.customerEmail === 'string' ? body.customerEmail.trim() : '';
   const llcName = typeof body.llcName === 'string' ? body.llcName.trim() : '';
   const phone = typeof body.customerPhone === 'string' ? body.customerPhone.trim() : '';
+  const orderUpdatesConsent = body.orderUpdatesConsent === true;
+  if ((body.orderUpdatesConsent !== undefined && typeof body.orderUpdatesConsent !== 'boolean') || (orderUpdatesConsent && (!phone || !contact))) {
+    return NextResponse.json({ error: 'Invalid order updates consent or missing phone' }, { status: 400 });
+  }
   const quote = getFormationQuote(state, entity);
   const suffixes = entity === 'LLC' ? ['LLC', 'L.L.C.'] : ['Inc.', 'Corporation'];
   if (!validToken(body.orderToken) || body.acceptTerms !== true || !quote || !customerName || customerName.length > 200 || !llcName || llcName.length > 200 ||
@@ -29,10 +33,10 @@ export async function POST(request: Request) {
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
     return NextResponse.json({ error: 'Order service unavailable. Contact support@justmyllc.com.' }, { status: 503 });
   }
-  const requestHash = tokenHash(JSON.stringify([customerName, customerEmail, phone, llcName, designator, entity, state, ownership, sCorpEligible, quote.total, ...(contact ? [contact] : [])]));
+  const requestHash = tokenHash(JSON.stringify([customerName, customerEmail, phone, llcName, designator, entity, state, ownership, sCorpEligible, quote.total, ...(contact ? [contact] : []), ...(body.orderUpdatesConsent !== undefined ? [orderUpdatesConsent] : [])]));
   try {
     const { data: order, error } = await supabaseAdmin.from('orders').insert({
-      ...(contact ? { contact_details: contact } : {}),
+      ...(contact ? { contact_details: { ...contact, ...(body.orderUpdatesConsent !== undefined ? { orderUpdatesConsent, orderUpdatesConsentAt: orderUpdatesConsent ? new Date().toISOString() : null, orderUpdatesConsentVersion: '2026-09-26' } : {}) } } : {}),
       customer_name: customerName, customer_email: customerEmail, customer_phone: phone,
       llc_name: llcName, designator, entity_type: entity, formation_state: state,
       ownership: entity === 'LLC' ? ownership : null, s_corp_eligible: entity === 'S-Corp',

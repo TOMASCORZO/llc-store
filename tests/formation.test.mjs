@@ -184,3 +184,18 @@ test('contact details are validated and saved without trusting unexpected fields
     assert.equal(invalid.inserted(), undefined);
   }
 });
+
+test('order update consent is explicit, requires a phone and is stored with its version', async () => {
+  const route = api();
+  assert.equal((await route.post({ ...valid, contact: contactDetails, customerPhone: '+15555550123', orderUpdatesConsent: true })).status, 201);
+  assert.equal(route.inserted().contact_details.orderUpdatesConsent, true);
+  assert.equal(route.inserted().contact_details.orderUpdatesConsentVersion, '2026-09-26');
+  assert.ok(route.inserted().contact_details.orderUpdatesConsentAt);
+  for (const change of [{ orderUpdatesConsent: 'true', customerPhone: '+15555550123' }, { orderUpdatesConsent: true, customerPhone: '' }]) {
+    assert.equal((await api().post({ ...valid, contact: contactDetails, ...change })).status, 400);
+  }
+  const declined = api();
+  assert.equal((await declined.post({ ...valid, contact: contactDetails, orderUpdatesConsent: false })).status, 201);
+  assert.equal(declined.inserted().contact_details.orderUpdatesConsent, false);
+  assert.equal(declined.inserted().contact_details.orderUpdatesConsentAt, null);
+});

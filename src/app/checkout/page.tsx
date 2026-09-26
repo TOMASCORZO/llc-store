@@ -4,6 +4,7 @@ import { Suspense, useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useLanguage } from '@/i18n/LanguageContext';
+import OrderUpdatesConsent from '@/components/OrderUpdatesConsent';
 import ContactFields from '@/components/ContactFields';
 import { ContactDetails } from '@/lib/contact';
 import Logo from '@/components/Logo';
@@ -37,6 +38,7 @@ function FormationCheckout() {
   const [entity, setEntity] = useState<EntityType>(initialEntity);
   const [state, setState] = useState(getFormationQuote(initialState, initialEntity) ? initialState : DEFAULT_STATE);
   const [contact, setContact] = useState<ContactDetails>({ firstName: '', lastName: '', country: '', street: '', addressLine2: '', city: '', region: '', postalCode: '' });
+  const [orderUpdatesConsent, setOrderUpdatesConsent] = useState(false);
   const [eligible, setEligible] = useState(false);
   const [ownership, setOwnership] = useState('single');
   const [isLoading, setIsLoading] = useState(false);
@@ -59,7 +61,7 @@ function FormationCheckout() {
       }
       const response = await fetch('/api/orders', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderToken: orderToken.current, acceptTerms, ...formData, customerName: `${contact.firstName.trim()} ${contact.lastName.trim()}`, contact, entity, state, sCorpEligible: eligible, ownership: entity === 'LLC' ? ownership : null, locale: lang }),
+        body: JSON.stringify({ orderToken: orderToken.current, acceptTerms, ...formData, customerName: `${contact.firstName.trim()} ${contact.lastName.trim()}`, contact, orderUpdatesConsent, entity, state, sCorpEligible: eligible, ownership: entity === 'LLC' ? ownership : null, locale: lang }),
       });
       const data = await response.json();
       if (!response.ok || typeof data.orderId !== 'string') throw new Error('Request failed');
@@ -121,7 +123,7 @@ function FormationCheckout() {
               <input id="email" type="email" autoComplete="email" required maxLength={254} value={formData.customerEmail} onChange={e => setFormData({ ...formData, customerEmail: e.target.value })} />
             </div>
             <div className="form-group"><label htmlFor="phone">{t('catalog.phone')}</label>
-              <input id="phone" type="tel" autoComplete="tel" maxLength={40} value={formData.customerPhone} onChange={e => setFormData({ ...formData, customerPhone: e.target.value })} />
+              <input id="phone" required={orderUpdatesConsent} pattern={orderUpdatesConsent ? ".*\\S.*" : undefined} type="tel" autoComplete="tel" maxLength={40} value={formData.customerPhone} onChange={e => setFormData({ ...formData, customerPhone: e.target.value })} />
             </div>
           </div>
           </div>
@@ -135,6 +137,7 @@ function FormationCheckout() {
             <input type="checkbox" checked={eligible} onChange={e => setEligible(e.target.checked)} required />
             <span>{t('catalog.confirmEligibility')}</span>
           </label>}
+          <OrderUpdatesConsent checked={orderUpdatesConsent} onChange={setOrderUpdatesConsent} />
           </>}
           {step === 3 && <>
           <dl className="setup-review">
