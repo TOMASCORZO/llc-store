@@ -958,3 +958,44 @@ html { scroll-padding-top: 100px; }
   .product-start-card { position: static; }
   .product-start-selection { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+/* Guided formation checkout. */
+.setup-header { display: flex; align-items: center; gap: 48px; padding: 24px 32px; background: var(--bg-elev); border-bottom: 1px solid var(--line); }
+.setup-header > a:first-child { flex-shrink: 0; }
+.setup-progress { max-width: 720px; flex: 1; margin: auto; }
+.setup-progress-caption { font-size: 14px; font-weight: 600; display: flex; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+.setup-progress-caption span { font-weight: 400; color: var(--ink-3); }
+.setup-progress ol { display: flex; list-style: none; padding: 0; }
+.setup-progress li { position: relative; flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; color: var(--ink-3); font-size: 13px; }
+.setup-progress li:not(:last-child)::after { content: ''; position: absolute; height: 2px; background: var(--line-strong); left: calc(50% + 20px); right: calc(-50% + 20px); top: 18px; }
+.setup-progress li.complete::after { background: var(--accent); }
+.setup-step-circle { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; border: 2px solid var(--line-strong); background: var(--bg-elev); font-family: var(--font-mono); font-size: 14px; }
+.setup-progress li.current { color: var(--accent); font-weight: 600; }
+.setup-progress .current .setup-step-circle { border-color: var(--accent); box-shadow: var(--shadow-glow); }
+.setup-progress .complete .setup-step-circle { background: var(--accent); border-color: var(--accent); color: white; }
+.setup-support { font-size: 14px; }
+.setup-layout { max-width: 1320px; padding: 64px 32px 88px; margin: auto; display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 32px; align-items: start; }
+.setup-form-card, .setup-help { padding: 36px; }
+.setup-form-card h1 { padding-bottom: 28px; margin-bottom: 28px; border-bottom: 1px solid var(--line); }
+.setup-form-card h1:focus { outline: none; }
+.setup-actions { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-top: 36px; }
+.setup-help { margin-top: 28px; }
+.setup-help h2 { margin-bottom: 22px; }
+.setup-help details { border: 1px solid var(--line); border-radius: var(--radius-md); padding: 16px; margin-top: 12px; }
+.setup-help summary { cursor: pointer; font-size: 15px; font-weight: 500; }
+.setup-help details p { color: var(--ink-3); font-size: 14px; margin-top: 14px; }
+.setup-summary { position: sticky; top: 24px; }
+.setup-summary-title { padding-bottom: 24px; margin-bottom: 24px; border-bottom: 1px solid var(--line); }
+.setup-review { display: grid; gap: 16px; margin-bottom: 28px; }
+.setup-review dt { font-size: 14px; color: var(--ink-3); }
+.setup-review dd { font-size: 18px; overflow-wrap: anywhere; }
+@media(max-width: 900px) {
+ .setup-header { flex-wrap: wrap; gap: 24px; padding: 20px; }
+ .setup-progress { flex-basis: 100%; order: 3; }
+ .setup-support { margin-left: auto; }
+ .setup-layout { grid-template-columns: minmax(0, 1fr); padding: 32px 20px 56px; }
+ .setup-summary { position: static; }
+ .setup-form-card, .setup-help { padding: 24px; }
+ .setup-progress li { font-size: 12px; }
+ .setup-actions .btn { font-size: 14px; padding: 12px 16px; }
+}
