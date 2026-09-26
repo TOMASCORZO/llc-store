@@ -22,6 +22,7 @@ export default function StateFilingTime({ state, entity }: { state: string; enti
     <p className="filing-location">{entity} · {state}</p>
     <div className="filing-options" role="radiogroup" aria-label={copy.title}>
       <label className="filing-option filing-option-pending">
+        {timing?.expedited.availability !== 'unavailable' && <span className="filing-fast-badge" lang="en"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden="true"><path d="m13 2-9 12h7l-1 8 10-12h-7l1-8Z" /></svg>FAST</span>}
         <div className="filing-option-header"><input type="radio" name="filing-speed" value="expedited" disabled /><span><strong>{copy.expedited}</strong><small>{timing?.expedited.availability === 'unavailable' ? copy.unavailable : copy.checking}</small></span></div>
         <div className="filing-option-body"><strong>{copy.pending}</strong><p>{copy.fee}</p><div>{copy.estimate}<span>{copy.unconfirmed}</span></div></div>
       </label>
