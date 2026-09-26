@@ -1,3 +1,4 @@
+import { parseBusinessMail } from '@/lib/business-mail';
 import { parseContact } from '@/lib/contact';
 import { tokenHash, validToken, TERMS_VERSION } from '@/lib/payments';
 import { NextResponse } from 'next/server';
@@ -12,6 +13,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
   }
   const { entity, state, designator, ownership, sCorpEligible } = body;
+  const businessMail = body.businessMail === undefined ? undefined : parseBusinessMail(body.businessMail);
+  if (businessMail === null || (businessMail && !body.contact)) return NextResponse.json({ error: 'Invalid business mail details' }, { status: 400 });
   const contact = body.contact === undefined ? undefined : parseContact(body.contact);
   if (contact === null) return NextResponse.json({ error: 'Invalid contact details' }, { status: 400 });
   const customerName = typeof body.customerName === 'string' ? body.customerName.trim() : '';
@@ -33,10 +36,10 @@ export async function POST(request: Request) {
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
     return NextResponse.json({ error: 'Order service unavailable. Contact support@justmyllc.com.' }, { status: 503 });
   }
-  const requestHash = tokenHash(JSON.stringify([customerName, customerEmail, phone, llcName, designator, entity, state, ownership, sCorpEligible, quote.total, ...(contact ? [contact] : []), ...(body.orderUpdatesConsent !== undefined ? [orderUpdatesConsent] : [])]));
+  const requestHash = tokenHash(JSON.stringify([customerName, customerEmail, phone, llcName, designator, entity, state, ownership, sCorpEligible, quote.total, ...(contact ? [contact] : []), ...(businessMail ? [businessMail] : []), ...(body.orderUpdatesConsent !== undefined ? [orderUpdatesConsent] : [])]));
   try {
     const { data: order, error } = await supabaseAdmin.from('orders').insert({
-      ...(contact ? { contact_details: { ...contact, ...(body.orderUpdatesConsent !== undefined ? { orderUpdatesConsent, orderUpdatesConsentAt: orderUpdatesConsent ? new Date().toISOString() : null, orderUpdatesConsentVersion: '2026-09-26' } : {}) } } : {}),
+      ...(contact ? { contact_details: { ...contact, ...(businessMail ? { businessMail } : {}), ...(body.orderUpdatesConsent !== undefined ? { orderUpdatesConsent, orderUpdatesConsentAt: orderUpdatesConsent ? new Date().toISOString() : null, orderUpdatesConsentVersion: '2026-09-26' } : {}) } } : {}),
       customer_name: customerName, customer_email: customerEmail, customer_phone: phone,
       llc_name: llcName, designator, entity_type: entity, formation_state: state,
       ownership: entity === 'LLC' ? ownership : null, s_corp_eligible: entity === 'S-Corp',

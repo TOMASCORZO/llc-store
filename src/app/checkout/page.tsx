@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { useLanguage } from '@/i18n/LanguageContext';
 import OrderUpdatesConsent from '@/components/OrderUpdatesConsent';
 import { SavedContact, readSavedContact, rememberRegisteredContact, forgetSavedContact } from '@/lib/saved-contact';
+import BusinessMailStep from '@/components/BusinessMailStep';
+import { EMPTY_BUSINESS_ADDRESS, parseBusinessMail, type BusinessAddress } from '@/lib/business-mail';
 import ContactFields from '@/components/ContactFields';
 import { ContactDetails } from '@/lib/contact';
 import Logo from '@/components/Logo';
@@ -28,7 +30,8 @@ const setupCopy = {
 function FormationCheckout() {
   const { t, lang } = useLanguage();
   const baseCopy = setupCopy[lang];
-  const copy = { ...baseCopy, steps: [baseCopy.steps[0], filingCopy[lang].title, ...baseCopy.steps.slice(1)], remaining: [filingCopy[lang].remaining, ...baseCopy.remaining] };
+  const mailTitle = { en: 'Business mailing address', es: 'Dirección comercial', pt: 'Endereço comercial', fr: 'Adresse professionnelle', de: 'Geschäftsadresse', zh: '公司地址' }[lang];
+  const copy = { ...baseCopy, steps: [baseCopy.steps[0], filingCopy[lang].title, baseCopy.steps[1], mailTitle, baseCopy.steps[2]], remaining: [{ en: '4 steps remaining', es: 'Quedan 4 pasos', pt: 'Faltam 4 etapas', fr: '4 étapes restantes', de: 'Noch 4 Schritte', zh: '还剩4步' }[lang], filingCopy[lang].remaining, ...baseCopy.remaining] };
   const [step, setStep] = useState(0);
   const stepHeading = useRef<HTMLHeadingElement>(null);
   useEffect(() => { stepHeading.current?.focus({ preventScroll: true }); window.scrollTo({ top: 0, behavior: 'instant' }); }, [step]);
@@ -39,6 +42,11 @@ function FormationCheckout() {
   const [entity, setEntity] = useState<EntityType>(initialEntity);
   const [state, setState] = useState(getFormationQuote(initialState, initialEntity) ? initialState : DEFAULT_STATE);
   const [contact, setContact] = useState<ContactDetails>({ firstName: '', lastName: '', country: '', street: '', addressLine2: '', city: '', region: '', postalCode: '' });
+  const [mailChoice, setMailChoice] = useState<'own' | 'virtual'>('own');
+  const [differentAddress, setDifferentAddress] = useState(false);
+  const [businessAddress, setBusinessAddress] = useState<BusinessAddress>(EMPTY_BUSINESS_ADDRESS);
+  const [mailError, setMailError] = useState(false);
+  const businessMail = parseBusinessMail(mailChoice === 'virtual' ? { choice: 'virtual' } : { choice: 'own', address: differentAddress ? businessAddress : contact });
   const [savedContact, setSavedContact] = useState<SavedContact | null>(null);
   const [usingSavedContact, setUsingSavedContact] = useState(false);
   const [orderUpdatesConsent, setOrderUpdatesConsent] = useState(true);
@@ -52,7 +60,9 @@ function FormationCheckout() {
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
-    if (step < 3) {
+    if (step < 4) {
+      if (step === 3 && !businessMail) { setMailError(true); return; }
+      setMailError(false);
       if (step === 1) setSavedContact(readSavedContact());
       setStep(step + 1);
       return;
@@ -65,7 +75,7 @@ function FormationCheckout() {
       }
       const response = await fetch('/api/orders', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderToken: orderToken.current, acceptTerms, ...formData, customerName: `${contact.firstName.trim()} ${contact.lastName.trim()}`, contact, orderUpdatesConsent, entity, state, sCorpEligible: eligible, ownership: entity === 'LLC' ? ownership : null, locale: lang }),
+        body: JSON.stringify({ orderToken: orderToken.current, acceptTerms, ...formData, customerName: `${contact.firstName.trim()} ${contact.lastName.trim()}`, contact, businessMail, orderUpdatesConsent, entity, state, sCorpEligible: eligible, ownership: entity === 'LLC' ? ownership : null, locale: lang }),
       });
       const data = await response.json();
       if (!response.ok || typeof data.orderId !== 'string') throw new Error('Request failed');
@@ -157,10 +167,15 @@ function FormationCheckout() {
           <OrderUpdatesConsent checked={orderUpdatesConsent} onChange={setOrderUpdatesConsent} />
           </>}
           {step === 3 && <>
+          <BusinessMailStep state={state} choice={mailChoice} onChoice={value => { setMailChoice(value); setMailError(false); }} different={differentAddress} onDifferent={value => { setDifferentAddress(value); setMailError(false); }} address={businessAddress} onAddress={value => { setBusinessAddress(value); setMailError(false); }} contact={contact} />
+          {mailError && <p className="formation-error" role="alert">{lang === 'es' ? 'Ingresá una dirección física válida. Si tu dirección de contacto es un P.O. Box, elegí una dirección diferente. Para EE. UU., incluí el estado y un código ZIP válido.' : 'Enter a valid physical street address. If your contact address is a P.O. Box, choose a different address. US addresses need a state and valid ZIP code.'}</p>}
+          </>}
+          {step === 4 && <>
           <dl className="setup-review">
             <div><dt>{t('catalog.company')}</dt><dd>{formData.llcName} {formData.designator}</dd></div>
             <div><dt>{t('catalog.name')}</dt><dd>{contact.firstName} {contact.lastName}</dd></div>
             <div><dt>{lang === 'es' ? 'Dirección de contacto' : 'Contact address'}</dt><dd>{[contact.street, contact.addressLine2, contact.city, contact.region, contact.postalCode, contact.country].filter(Boolean).join(', ')}</dd></div>
+            <div><dt>{mailTitle}</dt><dd>{businessMail?.choice === 'virtual' ? (lang === 'es' ? 'Dirección virtual solicitada — pendiente de confirmación' : 'Virtual address requested — awaiting confirmation') : businessMail?.choice === 'own' ? Object.values(businessMail.address).filter(Boolean).join(', ') : '—'}</dd></div>
             <div><dt>{t('catalog.email')}</dt><dd>{formData.customerEmail}</dd></div>
           </dl>
           <p className="formation-note">{t('catalog.paymentNote')}</p>
@@ -173,8 +188,8 @@ function FormationCheckout() {
           {error && <p className="formation-error" role="alert">{t('catalog.error')} <a href="mailto:support@justmyllc.com">Email</a></p>}
           <div className="setup-actions">
             {step === 0 ? <Link href={`/product?entity=${encodeURIComponent(entity)}&state=${encodeURIComponent(state)}`} className="btn btn-outline">← {copy.back}</Link> : <button type="button" className="btn btn-outline" onClick={() => { setError(false); setStep(step - 1); }}>← {copy.back}</button>}
-            <button type="submit" className="btn btn-accent btn-xl" disabled={isLoading || (step === 3 && (!acceptTerms || (entity === 'S-Corp' && !eligible)))}>
-              {step < 3 ? `${copy.next} →` : isLoading ? t('catalog.sending') : `${t('catalog.submit')} · ${formatUsd(getFormationQuote(state, entity)!.total)}`}
+            <button type="submit" className="btn btn-accent btn-xl" disabled={isLoading || (step === 4 && (!acceptTerms || (entity === 'S-Corp' && !eligible)))}>
+              {step < 4 ? `${copy.next} →` : isLoading ? t('catalog.sending') : `${t('catalog.submit')} · ${formatUsd(getFormationQuote(state, entity)!.total)}`}
             </button>
           </div>
         </fieldset>
@@ -188,6 +203,7 @@ function FormationCheckout() {
     <aside className="setup-summary"><div className="card" style={{ padding: 28 }}>
       <h2 className="t-h3 setup-summary-title">{copy.summary}</h2>
       <FormationSummary state={state} entity={entity} />
+      {step >= 3 && <p className="formation-note">{mailChoice === 'virtual' ? (lang === 'es' ? 'Dirección virtual: solicitud pendiente de confirmación; sin cargo agregado hoy.' : 'Virtual address: request awaiting confirmation; no charge added today.') : (lang === 'es' ? 'Correspondencia: dirección propia.' : 'Business mail: own address.')}</p>}
       <p className="formation-note">{t('pricing.desc')}</p>
       <ul className="pricing-features">{(t('pricing.features') as string[]).filter((_, i) => i !== 6 || entity === 'S-Corp').map(feature => <li key={feature}>{feature}</li>)}</ul>
       <p className="formation-note">{t('catalog.extras')}</p>

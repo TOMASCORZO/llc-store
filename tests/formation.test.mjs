@@ -11,6 +11,7 @@ function load(path, imports, env = {}, globals = {}) {
   return context.exports;
 }
 const contactModule = load('src/lib/contact.ts', {});
+const businessMailModule = load('src/lib/business-mail.ts', { './contact': contactModule });
 const payments = load('src/lib/payments.ts', { 'node:crypto': crypto });
 const catalog = load('src/lib/formation.ts', { './formation-prices.json': prices });
 import { NextResponse } from 'next/server.js';
@@ -21,7 +22,7 @@ function api(config = env) {
     inserted = data;
     return { select: () => ({ single: async () => ({ data: { id: 'test-order', status: data.status } }) }) };
   } }) };
-  const route = load('src/app/api/orders/route.ts', { 'next/server': { NextResponse }, '@/lib/contact': contactModule, '@/lib/payments': payments, '@/lib/formation': catalog, '@/lib/supabase': { supabaseAdmin } }, config);
+  const route = load('src/app/api/orders/route.ts', { 'next/server': { NextResponse }, '@/lib/contact': contactModule, '@/lib/business-mail': businessMailModule, '@/lib/payments': payments, '@/lib/formation': catalog, '@/lib/supabase': { supabaseAdmin } }, config);
   return { post: body => route.POST(new Request('http://localhost/api/orders', { method: 'POST', body: JSON.stringify(body) })), inserted: () => inserted };
 }
 const valid = { orderToken: 'a'.repeat(64), acceptTerms: true, customerName: 'Test User', customerEmail: 'test@example.com', llcName: 'Test Company', entity: 'LLC', state: 'New Mexico', designator: 'LLC', ownership: 'single', locale: 'es' };
@@ -88,7 +89,7 @@ test('webhook only marks matching, signed, paid orders as paid; replay is harmle
     select: () => ({ eq: () => ({ single: async () => ({ data: stored }) }) }),
     update: values => ({ eq: () => ({ eq: async () => { Object.assign(stored, values); updates++; return {}; } }) }),
   }) };
-  const route = load('src/app/api/webhook/route.ts', { 'next/server': { NextResponse }, '@/lib/contact': contactModule, '@/lib/payments': payments, '@/lib/supabase': { supabaseAdmin: db } }, config);
+  const route = load('src/app/api/webhook/route.ts', { 'next/server': { NextResponse }, '@/lib/contact': contactModule, '@/lib/business-mail': businessMailModule, '@/lib/payments': payments, '@/lib/supabase': { supabaseAdmin: db } }, config);
   const event = { eventType: 'checkout.completed', object: { id: 'ch_test', status: 'completed', metadata: { order_id: 'order_test' }, order: { id: 'pay_test', status: 'paid', product: 'prod_test', currency: 'USD', amount: 10200 } } };
   async function post(body, signed = true) {
     const raw = JSON.stringify(body);
@@ -131,7 +132,7 @@ test('payment retries reuse a stored session and concurrent attempts cannot crea
   assert.equal((await route.POST(request())).status, 409);
 });
 test('payment endpoint fails closed without configuration or access token', async () => {
-  const route = load('src/app/api/orders/payment/route.ts', { 'next/server': { NextResponse }, '@/lib/supabase': {}, '@/lib/contact': contactModule, '@/lib/payments': payments });
+  const route = load('src/app/api/orders/payment/route.ts', { 'next/server': { NextResponse }, '@/lib/supabase': {}, '@/lib/contact': contactModule, '@/lib/business-mail': businessMailModule, '@/lib/payments': payments });
   assert.equal((await route.POST(new Request('http://localhost', { method: 'POST' }))).status, 401);
   assert.equal((await route.POST(new Request('http://localhost', { method: 'POST', headers: { Authorization: `Bearer ${'a'.repeat(64)}` } }))).status, 503);
 });
@@ -147,7 +148,7 @@ test('order retry returns the original reference and rejects changed details', a
     } }) }),
     select: () => ({ eq: () => ({ single: async () => ({ data: stored }) }) }),
   }) };
-  const route = load('src/app/api/orders/route.ts', { 'next/server': { NextResponse }, '@/lib/supabase': { supabaseAdmin: db }, '@/lib/formation': catalog, '@/lib/contact': contactModule, '@/lib/payments': payments }, env);
+  const route = load('src/app/api/orders/route.ts', { 'next/server': { NextResponse }, '@/lib/supabase': { supabaseAdmin: db }, '@/lib/formation': catalog, '@/lib/contact': contactModule, '@/lib/business-mail': businessMailModule, '@/lib/payments': payments }, env);
   const request = body => new Request('http://localhost/api/orders', { method: 'POST', body: JSON.stringify(body) });
   assert.equal((await route.POST(request(valid))).status, 201);
   const retry = await route.POST(request(valid));
@@ -221,4 +222,24 @@ test('unavailable browser storage never blocks registration', () => {
   assert.equal(saved.readSavedContact(), null);
   assert.doesNotThrow(() => saved.rememberRegisteredContact(contactDetails, 'test@example.com', ''));
   assert.doesNotThrow(() => saved.forgetSavedContact());
+});
+
+
+test('business mail validates addresses and stores virtual requests without adding charges', async () => {
+  const contact = { firstName: 'Test', lastName: 'User', country: 'US', street: '123 Main Street', addressLine2: '', city: 'Miami', region: 'Florida', postalCode: '33101' };
+  for (const change of [{street:'P.O. Box 24'}, {addressLine2:'PO Box 3'}, {postalCode:'bad'}, {region:''}]) {
+    const route = api();
+    assert.equal((await route.post({...valid, contact, businessMail:{choice:'own',address:{...contact,...change}}})).status,400);
+    assert.equal(route.inserted(),undefined);
+  }
+  for (const businessMail of [{choice:'own',address:contact},{choice:'virtual',status:'active',price:29}]) {
+    const route = api();
+    assert.equal((await route.post({...valid,contact,businessMail})).status,201);
+    assert.equal(route.inserted().amount_usd,102);
+    assert.equal(route.inserted().contact_details.businessMail.choice,businessMail.choice);
+    if (businessMail.choice === 'virtual') assert.equal(route.inserted().contact_details.businessMail.status,'requested');
+  }
+  assert.match(businessMailModule.addressWarning('Louisiana',false),/Louisiana.*registered office/);
+  assert.match(businessMailModule.addressWarning('Florida',false),/Florida.*principal office/);
+  assert.match(businessMailModule.addressWarning('New Mexico',false),/New Mexico/);
 });
