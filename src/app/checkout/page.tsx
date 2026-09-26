@@ -4,6 +4,8 @@ import { Suspense, useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useLanguage } from '@/i18n/LanguageContext';
+import ContactFields from '@/components/ContactFields';
+import { ContactDetails } from '@/lib/contact';
 import Logo from '@/components/Logo';
 import Footer from '@/components/Footer';
 import FormationSelector from '@/components/FormationSelector';
@@ -13,12 +15,12 @@ import { DEFAULT_STATE, EntityType, formatUsd, getFormationQuote } from '@/lib/f
 
 
 const setupCopy = {
-  en: { progress: 'Your progress', remaining: ['2 steps remaining', '1 step remaining', 'Final step'], steps: ['Company information', 'Contact & formation', 'Review & payment'], back: 'Back', next: 'Next', summary: 'Order summary', help: 'Additional information', faq: [['What if my company name is unavailable?', 'The name entered here is a proposed name. Availability must be confirmed before filing.'], ['Should I include LLC or Inc. in the name?', 'Enter the company name without its ending, then choose the designator in the next field.']] },
-  es: { progress: 'Tu progreso', remaining: ['Quedan 2 pasos', 'Queda 1 paso', 'Último paso'], steps: ['Información de la empresa', 'Contacto y constitución', 'Revisión y pago'], back: 'Atrás', next: 'Siguiente', summary: 'Resumen del pedido', help: 'Información adicional', faq: [['¿Qué pasa si el nombre no está disponible?', 'El nombre ingresado es una propuesta. Su disponibilidad debe confirmarse antes de presentar la constitución.'], ['¿Debo incluir LLC o Inc. en el nombre?', 'Ingresá el nombre sin la terminación y elegí el designador en el campo siguiente.']] },
-  pt: { progress: 'Seu progresso', remaining: ['Faltam 2 etapas', 'Falta 1 etapa', 'Última etapa'], steps: ['Informações da empresa', 'Contato e constituição', 'Revisão e pagamento'], back: 'Voltar', next: 'Próximo', summary: 'Resumo do pedido', help: 'Informações adicionais', faq: [['E se o nome estiver indisponível?', 'O nome é uma proposta. A disponibilidade deve ser confirmada antes do registro.'], ['Devo incluir LLC ou Inc. no nome?', 'Digite o nome sem a terminação e escolha o designador no campo seguinte.']] },
-  fr: { progress: 'Votre progression', remaining: ['2 étapes restantes', '1 étape restante', 'Dernière étape'], steps: ['Informations de société', 'Contact et création', 'Vérification et paiement'], back: 'Retour', next: 'Suivant', summary: 'Résumé de commande', help: 'Informations complémentaires', faq: [['Et si le nom est indisponible ?', 'Le nom saisi est une proposition. Sa disponibilité doit être confirmée avant le dépôt.'], ['Faut-il ajouter LLC ou Inc. au nom ?', 'Saisissez le nom sans suffixe, puis sélectionnez le suffixe dans le champ suivant.']] },
-  de: { progress: 'Ihr Fortschritt', remaining: ['Noch 2 Schritte', 'Noch 1 Schritt', 'Letzter Schritt'], steps: ['Unternehmensdaten', 'Kontakt und Gründung', 'Prüfung und Zahlung'], back: 'Zurück', next: 'Weiter', summary: 'Bestellübersicht', help: 'Weitere Informationen', faq: [['Was, wenn der Name nicht verfügbar ist?', 'Der eingegebene Name ist ein Vorschlag. Die Verfügbarkeit muss vor der Einreichung bestätigt werden.'], ['Soll der Name LLC oder Inc. enthalten?', 'Geben Sie den Namen ohne Zusatz ein und wählen Sie den Zusatz im nächsten Feld.']] },
-  zh: { progress: '您的进度', remaining: ['还剩2步', '还剩1步', '最后一步'], steps: ['公司信息', '联系方式与注册', '核对与付款'], back: '返回', next: '下一步', summary: '订单摘要', help: '更多信息', faq: [['如果公司名称不可用怎么办？', '输入的名称是拟用名称，提交注册前需要确认是否可用。'], ['名称中应包含LLC或Inc.吗？', '请输入不带后缀的公司名称，然后在下一栏选择后缀。']] },
+  en: { progress: 'Your progress', remaining: ['2 steps remaining', '1 step remaining', 'Final step'], steps: ['Company information', 'Your contact information', 'Review & payment'], back: 'Back', next: 'Next', summary: 'Order summary', help: 'Additional information', faq: [['What if my company name is unavailable?', 'The name entered here is a proposed name. Availability must be confirmed before filing.'], ['Should I include LLC or Inc. in the name?', 'Enter the company name without its ending, then choose the designator in the next field.']] },
+  es: { progress: 'Tu progreso', remaining: ['Quedan 2 pasos', 'Queda 1 paso', 'Último paso'], steps: ['Información de la empresa', 'Tu información de contacto', 'Revisión y pago'], back: 'Atrás', next: 'Siguiente', summary: 'Resumen del pedido', help: 'Información adicional', faq: [['¿Qué pasa si el nombre no está disponible?', 'El nombre ingresado es una propuesta. Su disponibilidad debe confirmarse antes de presentar la constitución.'], ['¿Debo incluir LLC o Inc. en el nombre?', 'Ingresá el nombre sin la terminación y elegí el designador en el campo siguiente.']] },
+  pt: { progress: 'Seu progresso', remaining: ['Faltam 2 etapas', 'Falta 1 etapa', 'Última etapa'], steps: ['Informações da empresa', 'Informações de contato', 'Revisão e pagamento'], back: 'Voltar', next: 'Próximo', summary: 'Resumo do pedido', help: 'Informações adicionais', faq: [['E se o nome estiver indisponível?', 'O nome é uma proposta. A disponibilidade deve ser confirmada antes do registro.'], ['Devo incluir LLC ou Inc. no nome?', 'Digite o nome sem a terminação e escolha o designador no campo seguinte.']] },
+  fr: { progress: 'Votre progression', remaining: ['2 étapes restantes', '1 étape restante', 'Dernière étape'], steps: ['Informations de société', 'Vos coordonnées', 'Vérification et paiement'], back: 'Retour', next: 'Suivant', summary: 'Résumé de commande', help: 'Informations complémentaires', faq: [['Et si le nom est indisponible ?', 'Le nom saisi est une proposition. Sa disponibilité doit être confirmée avant le dépôt.'], ['Faut-il ajouter LLC ou Inc. au nom ?', 'Saisissez le nom sans suffixe, puis sélectionnez le suffixe dans le champ suivant.']] },
+  de: { progress: 'Ihr Fortschritt', remaining: ['Noch 2 Schritte', 'Noch 1 Schritt', 'Letzter Schritt'], steps: ['Unternehmensdaten', 'Ihre Kontaktdaten', 'Prüfung und Zahlung'], back: 'Zurück', next: 'Weiter', summary: 'Bestellübersicht', help: 'Weitere Informationen', faq: [['Was, wenn der Name nicht verfügbar ist?', 'Der eingegebene Name ist ein Vorschlag. Die Verfügbarkeit muss vor der Einreichung bestätigt werden.'], ['Soll der Name LLC oder Inc. enthalten?', 'Geben Sie den Namen ohne Zusatz ein und wählen Sie den Zusatz im nächsten Feld.']] },
+  zh: { progress: '您的进度', remaining: ['还剩2步', '还剩1步', '最后一步'], steps: ['公司信息', '您的联系信息', '核对与付款'], back: '返回', next: '下一步', summary: '订单摘要', help: '更多信息', faq: [['如果公司名称不可用怎么办？', '输入的名称是拟用名称，提交注册前需要确认是否可用。'], ['名称中应包含LLC或Inc.吗？', '请输入不带后缀的公司名称，然后在下一栏选择后缀。']] },
 };
 
 function FormationCheckout() {
@@ -34,6 +36,7 @@ function FormationCheckout() {
   const initialState = params.get('state') || DEFAULT_STATE;
   const [entity, setEntity] = useState<EntityType>(initialEntity);
   const [state, setState] = useState(getFormationQuote(initialState, initialEntity) ? initialState : DEFAULT_STATE);
+  const [contact, setContact] = useState<ContactDetails>({ firstName: '', lastName: '', country: '', street: '', addressLine2: '', city: '', region: '', postalCode: '' });
   const [eligible, setEligible] = useState(false);
   const [ownership, setOwnership] = useState('single');
   const [isLoading, setIsLoading] = useState(false);
@@ -56,7 +59,7 @@ function FormationCheckout() {
       }
       const response = await fetch('/api/orders', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderToken: orderToken.current, acceptTerms, ...formData, entity, state, sCorpEligible: eligible, ownership: entity === 'LLC' ? ownership : null, locale: lang }),
+        body: JSON.stringify({ orderToken: orderToken.current, acceptTerms, ...formData, customerName: `${contact.firstName.trim()} ${contact.lastName.trim()}`, contact, entity, state, sCorpEligible: eligible, ownership: entity === 'LLC' ? ownership : null, locale: lang }),
       });
       const data = await response.json();
       if (!response.ok || typeof data.orderId !== 'string') throw new Error('Request failed');
@@ -111,6 +114,17 @@ function FormationCheckout() {
           <StateFilingTime state={state} entity={entity} />
           </>}
           {step === 2 && <>
+          <ContactFields value={contact} onChange={setContact} />
+          <div className="contact-channels">
+          <div className="form-row">
+            <div className="form-group"><label htmlFor="email">{t('catalog.email')}</label>
+              <input id="email" type="email" autoComplete="email" required maxLength={254} value={formData.customerEmail} onChange={e => setFormData({ ...formData, customerEmail: e.target.value })} />
+            </div>
+            <div className="form-group"><label htmlFor="phone">{t('catalog.phone')}</label>
+              <input id="phone" type="tel" autoComplete="tel" maxLength={40} value={formData.customerPhone} onChange={e => setFormData({ ...formData, customerPhone: e.target.value })} />
+            </div>
+          </div>
+          </div>
           {entity === 'LLC' && <div className="form-group">
             <label htmlFor="ownership">{t('catalog.ownership')}</label>
             <select id="ownership" value={ownership} onChange={e => setOwnership(e.target.value)}>
@@ -121,23 +135,12 @@ function FormationCheckout() {
             <input type="checkbox" checked={eligible} onChange={e => setEligible(e.target.checked)} required />
             <span>{t('catalog.confirmEligibility')}</span>
           </label>}
-          <h2 className="t-eyebrow" style={{ margin: '24px 0' }}>{t('catalog.information')}</h2>
-          <div className="form-group"><label htmlFor="name">{t('catalog.name')}</label>
-            <input id="name" autoComplete="name" required maxLength={200} value={formData.customerName} onChange={e => setFormData({ ...formData, customerName: e.target.value })} />
-          </div>
-          <div className="form-row">
-            <div className="form-group"><label htmlFor="email">{t('catalog.email')}</label>
-              <input id="email" type="email" autoComplete="email" required maxLength={254} value={formData.customerEmail} onChange={e => setFormData({ ...formData, customerEmail: e.target.value })} />
-            </div>
-            <div className="form-group"><label htmlFor="phone">{t('catalog.phone')}</label>
-              <input id="phone" type="tel" autoComplete="tel" maxLength={40} value={formData.customerPhone} onChange={e => setFormData({ ...formData, customerPhone: e.target.value })} />
-            </div>
-          </div>
           </>}
           {step === 3 && <>
           <dl className="setup-review">
             <div><dt>{t('catalog.company')}</dt><dd>{formData.llcName} {formData.designator}</dd></div>
-            <div><dt>{t('catalog.name')}</dt><dd>{formData.customerName}</dd></div>
+            <div><dt>{t('catalog.name')}</dt><dd>{contact.firstName} {contact.lastName}</dd></div>
+            <div><dt>{lang === 'es' ? 'Dirección de contacto' : 'Contact address'}</dt><dd>{[contact.street, contact.addressLine2, contact.city, contact.region, contact.postalCode, contact.country].filter(Boolean).join(', ')}</dd></div>
             <div><dt>{t('catalog.email')}</dt><dd>{formData.customerEmail}</dd></div>
           </dl>
           <p className="formation-note">{t('catalog.paymentNote')}</p>

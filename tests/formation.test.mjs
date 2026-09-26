@@ -10,6 +10,7 @@ function load(path, imports, env = {}, globals = {}) {
   vm.runInNewContext(ts.transpileModule(fs.readFileSync(path, 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, esModuleInterop: true, target: ts.ScriptTarget.ES2022 } }).outputText, context);
   return context.exports;
 }
+const contactModule = load('src/lib/contact.ts', {});
 const payments = load('src/lib/payments.ts', { 'node:crypto': crypto });
 const catalog = load('src/lib/formation.ts', { './formation-prices.json': prices });
 import { NextResponse } from 'next/server.js';
@@ -20,7 +21,7 @@ function api(config = env) {
     inserted = data;
     return { select: () => ({ single: async () => ({ data: { id: 'test-order', status: data.status } }) }) };
   } }) };
-  const route = load('src/app/api/orders/route.ts', { 'next/server': { NextResponse }, '@/lib/payments': payments, '@/lib/formation': catalog, '@/lib/supabase': { supabaseAdmin } }, config);
+  const route = load('src/app/api/orders/route.ts', { 'next/server': { NextResponse }, '@/lib/contact': contactModule, '@/lib/payments': payments, '@/lib/formation': catalog, '@/lib/supabase': { supabaseAdmin } }, config);
   return { post: body => route.POST(new Request('http://localhost/api/orders', { method: 'POST', body: JSON.stringify(body) })), inserted: () => inserted };
 }
 const valid = { orderToken: 'a'.repeat(64), acceptTerms: true, customerName: 'Test User', customerEmail: 'test@example.com', llcName: 'Test Company', entity: 'LLC', state: 'New Mexico', designator: 'LLC', ownership: 'single', locale: 'es' };
@@ -87,7 +88,7 @@ test('webhook only marks matching, signed, paid orders as paid; replay is harmle
     select: () => ({ eq: () => ({ single: async () => ({ data: stored }) }) }),
     update: values => ({ eq: () => ({ eq: async () => { Object.assign(stored, values); updates++; return {}; } }) }),
   }) };
-  const route = load('src/app/api/webhook/route.ts', { 'next/server': { NextResponse }, '@/lib/payments': payments, '@/lib/supabase': { supabaseAdmin: db } }, config);
+  const route = load('src/app/api/webhook/route.ts', { 'next/server': { NextResponse }, '@/lib/contact': contactModule, '@/lib/payments': payments, '@/lib/supabase': { supabaseAdmin: db } }, config);
   const event = { eventType: 'checkout.completed', object: { id: 'ch_test', status: 'completed', metadata: { order_id: 'order_test' }, order: { id: 'pay_test', status: 'paid', product: 'prod_test', currency: 'USD', amount: 10200 } } };
   async function post(body, signed = true) {
     const raw = JSON.stringify(body);
@@ -130,7 +131,7 @@ test('payment retries reuse a stored session and concurrent attempts cannot crea
   assert.equal((await route.POST(request())).status, 409);
 });
 test('payment endpoint fails closed without configuration or access token', async () => {
-  const route = load('src/app/api/orders/payment/route.ts', { 'next/server': { NextResponse }, '@/lib/supabase': {}, '@/lib/payments': payments });
+  const route = load('src/app/api/orders/payment/route.ts', { 'next/server': { NextResponse }, '@/lib/supabase': {}, '@/lib/contact': contactModule, '@/lib/payments': payments });
   assert.equal((await route.POST(new Request('http://localhost', { method: 'POST' }))).status, 401);
   assert.equal((await route.POST(new Request('http://localhost', { method: 'POST', headers: { Authorization: `Bearer ${'a'.repeat(64)}` } }))).status, 503);
 });
@@ -146,7 +147,7 @@ test('order retry returns the original reference and rejects changed details', a
     } }) }),
     select: () => ({ eq: () => ({ single: async () => ({ data: stored }) }) }),
   }) };
-  const route = load('src/app/api/orders/route.ts', { 'next/server': { NextResponse }, '@/lib/supabase': { supabaseAdmin: db }, '@/lib/formation': catalog, '@/lib/payments': payments }, env);
+  const route = load('src/app/api/orders/route.ts', { 'next/server': { NextResponse }, '@/lib/supabase': { supabaseAdmin: db }, '@/lib/formation': catalog, '@/lib/contact': contactModule, '@/lib/payments': payments }, env);
   const request = body => new Request('http://localhost/api/orders', { method: 'POST', body: JSON.stringify(body) });
   assert.equal((await route.POST(request(valid))).status, 201);
   const retry = await route.POST(request(valid));
@@ -169,4 +170,17 @@ test('provider checkout uses exact server amount in cents and a fixed return ori
   assert.equal(sent.body.request_id, 'internal_order');
   assert.equal(sent.body.metadata.order_id, 'internal_order');
   assert.equal(sent.body.success_url, 'https://www.justmyllc.com/checkout/confirmation?order=internal_order');
+});
+
+const contactDetails = { firstName: 'Example', lastName: 'Customer', country: 'AR', street: 'Example Street 123', addressLine2: '', city: 'Example City', region: '', postalCode: '' };
+test('contact details are validated and saved without trusting unexpected fields', async () => {
+  const route = api();
+  assert.equal((await route.post({ ...valid, contact: { ...contactDetails, admin: true } })).status, 201);
+  assert.equal(route.inserted().contact_details.country, 'AR');
+  assert.equal(route.inserted().contact_details.admin, undefined);
+  for (const change of [{ country: 'XX' }, { firstName: ' ' }, { street: 'x'.repeat(201) }, { city: null }]) {
+    const invalid = api();
+    assert.equal((await invalid.post({ ...valid, contact: { ...contactDetails, ...change } })).status, 400);
+    assert.equal(invalid.inserted(), undefined);
+  }
 });

@@ -1028,3 +1028,9 @@ html { scroll-padding-top: 100px; }
   6%, 12%, 18% { transform: translateX(1.5px) rotate(2deg); }
 }
 @media (prefers-reduced-motion: reduce) { .filing-fast-badge { animation: none; } }
+
+.contact-intro { color: var(--ink-3); font-size: 16px; margin-bottom: 28px; }
+.contact-address, .contact-channels { border-top: 1px solid var(--line); margin-top: 24px; padding-top: 28px; }
+.contact-street { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+.contact-city { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 20px; }
+@media(max-width: 768px) { .contact-street, .contact-city { grid-template-columns: 1fr; gap: 0; } }

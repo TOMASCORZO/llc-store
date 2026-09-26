@@ -19,8 +19,8 @@ try {
   await client.query('CREATE TABLE IF NOT EXISTS public.app_migrations (name TEXT PRIMARY KEY, applied_at TIMESTAMPTZ NOT NULL DEFAULT now())');
   const { rows } = await client.query("SELECT to_regclass('public.orders') AS table_name");
   const files = rows[0].table_name
-    ? ['migrations/20260919_formation_catalog.sql', 'migrations/20260920_direct_checkout.sql']
-    : ['supabase-schema.sql', 'migrations/20260919_formation_catalog.sql', 'migrations/20260920_direct_checkout.sql'];
+    ? ['migrations/20260919_formation_catalog.sql', 'migrations/20260920_direct_checkout.sql', 'migrations/20260926_contact_details.sql']
+    : ['supabase-schema.sql', 'migrations/20260919_formation_catalog.sql', 'migrations/20260920_direct_checkout.sql', 'migrations/20260926_contact_details.sql'];
   for (const file of files) {
     const { rowCount } = await client.query('SELECT name FROM public.app_migrations WHERE name=$1', [file]);
     if (rowCount) continue;

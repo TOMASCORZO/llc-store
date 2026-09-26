@@ -1,3 +1,4 @@
+import { parseContact } from '@/lib/contact';
 import { tokenHash, validToken, TERMS_VERSION } from '@/lib/payments';
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
@@ -11,6 +12,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
   }
   const { entity, state, designator, ownership, sCorpEligible } = body;
+  const contact = body.contact === undefined ? undefined : parseContact(body.contact);
+  if (contact === null) return NextResponse.json({ error: 'Invalid contact details' }, { status: 400 });
   const customerName = typeof body.customerName === 'string' ? body.customerName.trim() : '';
   const customerEmail = typeof body.customerEmail === 'string' ? body.customerEmail.trim() : '';
   const llcName = typeof body.llcName === 'string' ? body.llcName.trim() : '';
@@ -26,9 +29,10 @@ export async function POST(request: Request) {
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
     return NextResponse.json({ error: 'Order service unavailable. Contact support@justmyllc.com.' }, { status: 503 });
   }
-  const requestHash = tokenHash(JSON.stringify([customerName, customerEmail, phone, llcName, designator, entity, state, ownership, sCorpEligible, quote.total]));
+  const requestHash = tokenHash(JSON.stringify([customerName, customerEmail, phone, llcName, designator, entity, state, ownership, sCorpEligible, quote.total, ...(contact ? [contact] : [])]));
   try {
     const { data: order, error } = await supabaseAdmin.from('orders').insert({
+      ...(contact ? { contact_details: contact } : {}),
       customer_name: customerName, customer_email: customerEmail, customer_phone: phone,
       llc_name: llcName, designator, entity_type: entity, formation_state: state,
       ownership: entity === 'LLC' ? ownership : null, s_corp_eligible: entity === 'S-Corp',
