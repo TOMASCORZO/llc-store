@@ -1,4 +1,4 @@
-import { normalizeDomain } from './domains';
+import { normalizeDomain, DOMAIN_MANAGEMENT_USD, type DomainResult } from './domains';
 let cachedToken: {value:string;expires:number} | undefined;
 async function token() {
   if (cachedToken && cachedToken.expires > Date.now()) return cachedToken.value;
@@ -16,10 +16,15 @@ export async function providerRequest(path:string,body:object) {
   if(!r.ok || data.code !== 0 || !data.data) throw new Error('Openprovider request failed');
   return data.data;
 }
-export async function checkDomain(domain:string) {
-  if(!normalizeDomain(domain)) throw new Error('Invalid domain');
-  const data=await providerRequest('domains/check',{domains:[{name:domain.slice(0,-4),extension:'com'}],with_price:true});
-  const result=data.results?.find((r:{domain?:string})=>r.domain===domain);
-  if(!result || typeof result.status !== 'string') throw new Error('Unknown domain result');
-  return {name:domain,available:result.status==='free',premium:result.is_premium===true || result.is_premium===1 || result.is_premium==='1' || Number(result.premium?.price?.create || 0) > 0};
+export async function checkDomains(domains:string[]): Promise<DomainResult[]> {
+  if(!domains.length || domains.length > 15 || domains.some(domain=>!normalizeDomain(domain))) throw new Error('Invalid domain');
+  const data=await providerRequest('domains/check',{domains:domains.map(domain=>({name:domain.split('.')[0],extension:domain.split('.')[1]})),with_price:true});
+  return domains.map(name=>{
+    const result=data.results?.find((r:{domain?:string})=>r.domain===name);
+    const cost=result?.price?.reseller;
+    const amount=Number(cost?.price);
+    const premium=result?.is_premium===true || result?.is_premium===1 || result?.is_premium==='1' || Number(result?.premium?.price?.create || 0)>0;
+    return {name,available:result?.status==='free',premium,price:cost?.currency==='USD' && Number.isFinite(amount) && amount>=0 && !premium ? Math.round((amount+DOMAIN_MANAGEMENT_USD)*100)/100 : null};
+  });
 }
+export async function checkDomain(domain:string) { return (await checkDomains([domain]))[0]; }

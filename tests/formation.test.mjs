@@ -11,7 +11,7 @@ function load(path, imports, env = {}, globals = {}) {
   return context.exports;
 }
 const domainModule = load('src/lib/domains.ts', {});
-const domainProvider = {checkDomain: async name => ({name,available:true,premium:false})};
+const domainProvider = {checkDomain: async name => ({name,available:true,premium:false,price:17.98})};
 const contactModule = load('src/lib/contact.ts', {});
 const businessMailModule = load('src/lib/business-mail.ts', { './contact': contactModule });
 const membersModule = load('src/lib/members.ts', { './contact': contactModule });
@@ -308,14 +308,14 @@ test('EIN service adds $50 only when not already included and rejects invalid se
 });
 
 test('domain registration is optional, validated and priced on the server', async () => {
- const domainRegistration={name:'test-company.com',street:'Main Street',number:'123',phoneCountry:'+1',phoneArea:'305',phoneNumber:'5550123',consent:true};
+ const domainRegistration={name:'test-company.com',price:17.98,street:'Main Street',number:'123',phoneCountry:'+1',phoneArea:'305',phoneNumber:'5550123',consent:true};
  const contact={...contactDetails,postalCode:'1878'};
  const route=api();
  assert.equal((await route.post({...valid,contact,domainRegistration,domainFee:1})).status,201);
- assert.equal(route.inserted().amount_usd,118);
- assert.equal(route.inserted().domain_fee_usd,16);
+ assert.equal(route.inserted().amount_usd,119.98);
+ assert.equal(route.inserted().domain_fee_usd,17.98);
  assert.equal(route.inserted().domain_status,'pending_payment');
- for(const patch of [{name:'bad.net'},{name:'https://example.com'},{consent:false},{phoneCountry:'1'},{number:''}]) {
+ for(const patch of [{name:'bad.invalid'},{name:'https://example.com'},{consent:false},{phoneCountry:'1'},{number:''}]) {
   assert.equal((await api().post({...valid,contact,domainRegistration:{...domainRegistration,...patch}})).status,400);
  }
 });
@@ -323,14 +323,21 @@ test('domain registration is optional, validated and priced on the server', asyn
 test('paid domain registration claims once and quarantines uncertain results', async () => {
  for (const fail of [false,true]) {
   let claimed=false, calls=0, status='pending_payment';
-  const order={id:'order-domain',domain_registration:{name:'example-test.com',street:'Main',number:'1',phoneCountry:'+1',phoneArea:'305',phoneNumber:'5550123'},contact_details:{...contactDetails,postalCode:'1878'},customer_email:'test@example.com'};
+  const order={id:'order-domain',domain_fee_usd:17.98,domain_registration:{name:'example-test.com',street:'Main',number:'1',phoneCountry:'+1',phoneArea:'305',phoneNumber:'5550123'},contact_details:{...contactDetails,postalCode:'1878'},customer_email:'test@example.com'};
   const db={from:()=>({update:patch=>{
    const chain={eq:()=>chain,select:()=>chain,maybeSingle:async()=>{if(claimed)return {data:null};claimed=true;return {data:order};},then:resolve=>{if(patch.domain_status)status=patch.domain_status;return Promise.resolve(resolve({error:null}));}};return chain;
   }})};
-  const module=load('src/lib/register-domain.ts',{'./supabase':{supabaseAdmin:db},'./openprovider':{checkDomain:async()=>({available:true,premium:false}),providerRequest:async path=>{calls++;if(path==='customers')return {handle:'TEST-HANDLE'};if(fail)throw new Error('Timeout');return {id:123,status:'ACT'};}}});
+  const module=load('src/lib/register-domain.ts',{'./supabase':{supabaseAdmin:db},'./openprovider':{checkDomain:async()=>({available:true,premium:false,price:17.98}),providerRequest:async path=>{calls++;if(path==='customers')return {handle:'TEST-HANDLE'};if(fail)throw new Error('Timeout');return {id:123,status:'ACT'};}}});
   await module.registerPaidDomain(order.id);
   assert.equal(status,fail?'needs_review':'registered');
   await module.registerPaidDomain(order.id);
   assert.equal(calls,2);
  }
+});
+
+test('domain search quotes USD reseller price plus $6 for each extension', async () => {
+ const provider=load('src/lib/openprovider.ts',{'./domains':domainModule},{OPENPROVIDER_API_TOKEN:'test'},{fetch:async()=>({ok:true,json:async()=>({code:0,data:{results:[{domain:'example.com',status:'free',price:{reseller:{price:11.98,currency:'USD'}}},{domain:'example.net',status:'free',price:{reseller:{price:13,currency:'USD'}}},{domain:'example.org',status:'free',price:{reseller:{price:10,currency:'EUR'}}}]}})})});
+ const results=await provider.checkDomains(['example.com','example.net','example.org']);
+ assert.equal(results[0].price,17.98);assert.equal(results[1].price,19);assert.equal(results[2].price,null);
+ assert.equal(domainModule.normalizeDomain('test.store'),'test.store');
 });
