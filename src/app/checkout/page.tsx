@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { useLanguage } from '@/i18n/LanguageContext';
 import OrderUpdatesConsent from '@/components/OrderUpdatesConsent';
 import { SavedContact, readSavedContact, rememberRegisteredContact, forgetSavedContact } from '@/lib/saved-contact';
+import RegisteredAgentStep from '@/components/RegisteredAgentStep';
+import { EMPTY_AGENT, parseRegisteredAgent } from '@/lib/registered-agent';
 import MembersStep from '@/components/MembersStep';
 import { emptyMember, parseMembers, type Member } from '@/lib/members';
 import PremiumPackage from '@/components/PremiumPackage';
@@ -35,7 +37,7 @@ function FormationCheckout() {
   const { t, lang } = useLanguage();
   const baseCopy = setupCopy[lang];
   const mailTitle = { en: 'Business mailing address', es: 'Dirección comercial', pt: 'Endereço comercial', fr: 'Adresse professionnelle', de: 'Geschäftsadresse', zh: '公司地址' }[lang];
-  const copy = { ...baseCopy, steps: [baseCopy.steps[0], filingCopy[lang].title, baseCopy.steps[1], mailTitle, lang === 'es' ? 'Paquete premium' : 'Premium Service Package', lang === 'es' ? 'Propietarios de la empresa' : 'Company owners', baseCopy.steps[2]], remaining: [{ en: '6 steps remaining', es: 'Quedan 6 pasos', pt: 'Faltam 6 etapas', fr: '6 étapes restantes', de: 'Noch 6 Schritte', zh: '还剩6步' }[lang], { en: '5 steps remaining', es: 'Quedan 5 pasos', pt: 'Faltam 5 etapas', fr: '5 étapes restantes', de: 'Noch 5 Schritte', zh: '还剩5步' }[lang], { en: '4 steps remaining', es: 'Quedan 4 pasos', pt: 'Faltam 4 etapas', fr: '4 étapes restantes', de: 'Noch 4 Schritte', zh: '还剩4步' }[lang], filingCopy[lang].remaining, ...baseCopy.remaining] };
+  const copy = { ...baseCopy, steps: [baseCopy.steps[0], filingCopy[lang].title, baseCopy.steps[1], mailTitle, lang === 'es' ? 'Paquete premium' : 'Premium Service Package', lang === 'es' ? 'Propietarios de la empresa' : 'Company owners', lang === 'es' ? 'Agente registrado' : 'Registered agent', baseCopy.steps[2]], remaining: [{ en: '7 steps remaining', es: 'Quedan 7 pasos', pt: 'Faltam 7 etapas', fr: '7 étapes restantes', de: 'Noch 7 Schritte', zh: '还剩7步' }[lang], { en: '6 steps remaining', es: 'Quedan 6 pasos', pt: 'Faltam 6 etapas', fr: '6 étapes restantes', de: 'Noch 6 Schritte', zh: '还剩6步' }[lang], { en: '5 steps remaining', es: 'Quedan 5 pasos', pt: 'Faltam 5 etapas', fr: '5 étapes restantes', de: 'Noch 5 Schritte', zh: '还剩5步' }[lang], { en: '4 steps remaining', es: 'Quedan 4 pasos', pt: 'Faltam 4 etapas', fr: '4 étapes restantes', de: 'Noch 4 Schritte', zh: '还剩4步' }[lang], filingCopy[lang].remaining, ...baseCopy.remaining] };
   const [step, setStep] = useState(0);
   const stepHeading = useRef<HTMLHeadingElement>(null);
   useEffect(() => { stepHeading.current?.focus({ preventScroll: true }); window.scrollTo({ top: 0, behavior: 'instant' }); }, [step]);
@@ -58,6 +60,9 @@ function FormationCheckout() {
   const [usingSavedContact, setUsingSavedContact] = useState(false);
   const [orderUpdatesConsent, setOrderUpdatesConsent] = useState(true);
   const [eligible, setEligible] = useState(false);
+  const [agent, setAgent] = useState(EMPTY_AGENT);
+  const [agentError, setAgentError] = useState(false);
+  const resolvedAgent = agent.useContactName && agent.type === 'individual' ? {...agent,firstName:contact.firstName,lastName:contact.lastName} : agent;
   const [members, setMembers] = useState<Member[]>([emptyMember()]);
   const [membersError, setMembersError] = useState(false);
   const resolvedMembers = members.map(member => member.useContactName && member.type === 'individual' ? {...member,firstName:contact.firstName,lastName:contact.lastName} : member);
@@ -70,9 +75,11 @@ function FormationCheckout() {
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
-    if (step < 6) {
+    if (step < 7) {
       if (step === 3 && !businessMail) { setMailError(true); return; }
       if (step === 5 && !parseMembers(resolvedMembers, businessMail, entity)) { setMembersError(true); return; }
+      if (step === 6 && !parseRegisteredAgent(resolvedAgent, state)) { setAgentError(true); return; }
+      setAgentError(false);
       setMembersError(false);
       setMailError(false);
       if (step === 1) setSavedContact(readSavedContact());
@@ -87,7 +94,7 @@ function FormationCheckout() {
       }
       const response = await fetch('/api/orders', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderToken: orderToken.current, acceptTerms, ...formData, customerName: `${contact.firstName.trim()} ${contact.lastName.trim()}`, contact, businessMail, members: resolvedMembers, plan, premiumPackage, orderUpdatesConsent, entity, state, sCorpEligible: eligible, ownership: entity === 'LLC' ? ownership : null, locale: lang }),
+        body: JSON.stringify({ orderToken: orderToken.current, acceptTerms, ...formData, customerName: `${contact.firstName.trim()} ${contact.lastName.trim()}`, contact, businessMail, members: resolvedMembers, registeredAgent: resolvedAgent, plan, premiumPackage, orderUpdatesConsent, entity, state, sCorpEligible: eligible, ownership: entity === 'LLC' ? ownership : null, locale: lang }),
       });
       const data = await response.json();
       if (!response.ok || typeof data.orderId !== 'string') throw new Error('Request failed');
@@ -179,8 +186,9 @@ function FormationCheckout() {
           </>}
           {step === 4 && <PremiumPackage entity={entity} einIncluded={includesEin(plan)} />}
           {step === 5 && <><MembersStep members={members} onChange={value=>{setMembers(value);setMembersError(false);}} contact={contact} businessMail={businessMail} entity={entity}/>{membersError && <p className="formation-error" role="alert">{lang === 'es' ? 'Revisá los nombres, el tipo de propietario y las direcciones de todos los miembros.' : 'Review the names, owner types, and addresses for every owner.'}</p>}</>}
-          {step === 6 && <>
-          <dl className="setup-review"><div><dt>{lang === 'es' ? 'Propietarios' : 'Owners'}</dt><dd>{resolvedMembers.map(m=>m.type === 'company' ? m.companyName : `${m.firstName} ${m.lastName}`).join('; ')}</dd></div><div><dt>Plan</dt><dd>{formatUsd(getFormationQuote(state, entity, plan)!.serviceFee)}</dd></div><div><dt>{lang === 'es' ? 'Paquete premium' : 'Premium package'}</dt><dd>{premiumPackage ? formatUsd(PREMIUM_PACKAGE_USD) : (lang === 'es' ? 'No seleccionado' : 'Not selected')}</dd></div>
+          {step === 6 && <><RegisteredAgentStep value={agent} onChange={value=>{setAgent(value);setAgentError(false);}} contact={contact} state={state}/>{agentError && <p className="formation-error" role="alert">{lang === 'es' ? 'Revisá el nombre del agente, la dirección física y el código ZIP. No se permiten P.O. Boxes.' : 'Check the agent name, physical street address, and ZIP code. P.O. Boxes are not allowed.'}</p>}</>}
+          {step === 7 && <>
+          <dl className="setup-review"><div><dt>{lang === 'es' ? 'Agente registrado' : 'Registered agent'}</dt><dd>{agent.choice === 'service' ? 'Just My LLC' : agent.type === 'company' ? agent.companyName : `${resolvedAgent.firstName} ${resolvedAgent.lastName}`}{agent.choice === 'own' && <><br/>{[agent.street,agent.addressLine2,agent.city,state,agent.postalCode].filter(Boolean).join(', ')}</>}</dd></div><div><dt>{lang === 'es' ? 'Propietarios' : 'Owners'}</dt><dd>{resolvedMembers.map(m=>m.type === 'company' ? m.companyName : `${m.firstName} ${m.lastName}`).join('; ')}</dd></div><div><dt>Plan</dt><dd>{formatUsd(getFormationQuote(state, entity, plan)!.serviceFee)}</dd></div><div><dt>{lang === 'es' ? 'Paquete premium' : 'Premium package'}</dt><dd>{premiumPackage ? formatUsd(PREMIUM_PACKAGE_USD) : (lang === 'es' ? 'No seleccionado' : 'Not selected')}</dd></div>
             <div><dt>{t('catalog.company')}</dt><dd>{formData.llcName} {formData.designator}</dd></div>
             <div><dt>{t('catalog.name')}</dt><dd>{contact.firstName} {contact.lastName}</dd></div>
             <div><dt>{lang === 'es' ? 'Dirección de contacto' : 'Contact address'}</dt><dd>{[contact.street, contact.addressLine2, contact.city, contact.region, contact.postalCode, contact.country].filter(Boolean).join(', ')}</dd></div>
@@ -197,8 +205,8 @@ function FormationCheckout() {
           {error && <p className="formation-error" role="alert">{t('catalog.error')} <a href="mailto:support@justmyllc.com">Email</a></p>}
           <div className="setup-actions premium-actions">
             {step === 0 ? <Link href={`/product?entity=${encodeURIComponent(entity)}&state=${encodeURIComponent(state)}&plan=${plan}`} className="btn btn-outline">← {copy.back}</Link> : <button type="button" className="btn btn-outline" onClick={() => { setError(false); setStep(step - 1); }}>← {copy.back}</button>}
-            {step === 4 ? <><button type="button" className="btn btn-outline" onClick={()=>{setPremiumPackage(false);setStep(5);}}>{lang === 'es' ? 'No, gracias' : 'No thanks'}</button><button type="button" className="btn btn-accent btn-xl" onClick={()=>{setPremiumPackage(true);setStep(5);}}>{lang === 'es' ? 'Agregar paquete · $99 →' : 'Add package · $99 →'}</button></> : <button type="submit" className="btn btn-accent btn-xl" disabled={isLoading || (step === 6 && (!acceptTerms || (entity === 'S-Corp' && !eligible)))}>
-              {step < 6 ? `${copy.next} →` : isLoading ? t('catalog.sending') : `${t('catalog.submit')} · ${formatUsd(getFormationQuote(state, entity, plan)!.total + (premiumPackage ? PREMIUM_PACKAGE_USD : 0))}`}
+            {step === 4 ? <><button type="button" className="btn btn-outline" onClick={()=>{setPremiumPackage(false);setStep(5);}}>{lang === 'es' ? 'No, gracias' : 'No thanks'}</button><button type="button" className="btn btn-accent btn-xl" onClick={()=>{setPremiumPackage(true);setStep(5);}}>{lang === 'es' ? 'Agregar paquete · $99 →' : 'Add package · $99 →'}</button></> : <button type="submit" className="btn btn-accent btn-xl" disabled={isLoading || (step === 7 && (!acceptTerms || (entity === 'S-Corp' && !eligible)))}>
+              {step < 7 ? `${copy.next} →` : isLoading ? t('catalog.sending') : `${t('catalog.submit')} · ${formatUsd(getFormationQuote(state, entity, plan)!.total + (premiumPackage ? PREMIUM_PACKAGE_USD : 0))}`}
             </button>}
           </div>
         </fieldset>
@@ -215,7 +223,7 @@ function FormationCheckout() {
       <FormationSummary state={state} entity={entity} plan={plan} premiumPackage={premiumPackage} />
       {step >= 3 && <p className="formation-note">{mailChoice === 'virtual' ? (lang === 'es' ? 'Dirección virtual: solicitud pendiente de confirmación; sin cargo agregado hoy.' : 'Virtual address: request awaiting confirmation; no charge added today.') : (lang === 'es' ? 'Correspondencia: dirección propia.' : 'Business mail: own address.')}</p>}
 
-      <ul className="pricing-features">{(t('pricing.features') as string[]).filter((_, i) => (i !== 6 || entity === 'S-Corp') && (i !== 3 || includesEin(plan) || premiumPackage)).map(feature => <li key={feature}>{feature}</li>)}</ul>
+      <ul className="pricing-features">{(t('pricing.features') as string[]).filter((_, i) => (i !== 6 || entity === 'S-Corp') && (i !== 2 || agent.choice === 'service') && (i !== 3 || includesEin(plan) || premiumPackage)).map(feature => <li key={feature}>{feature}</li>)}</ul>
       <p className="formation-note">{t('catalog.extras')}</p>
     </div></aside>
   </main></>;

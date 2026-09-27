@@ -1,3 +1,4 @@
+import { parseRegisteredAgent } from '@/lib/registered-agent';
 import { parseMembers } from '@/lib/members';
 import { parseBusinessMail } from '@/lib/business-mail';
 import { parseContact } from '@/lib/contact';
@@ -20,6 +21,8 @@ export async function POST(request: Request) {
   if (contact === null) return NextResponse.json({ error: 'Invalid contact details' }, { status: 400 });
   const members = body.members === undefined ? undefined : parseMembers(body.members, businessMail, entity);
   if (members === null || (members && (!contact || (entity === 'LLC' && ownership !== (members.length === 1 ? 'single' : 'multiple'))))) return NextResponse.json({ error: 'Invalid owner details' }, { status: 400 });
+  const registeredAgent = body.registeredAgent === undefined ? undefined : parseRegisteredAgent(body.registeredAgent, state);
+  if (registeredAgent === null || (registeredAgent && !contact)) return NextResponse.json({ error: 'Invalid registered agent' }, { status: 400 });
   const customerName = typeof body.customerName === 'string' ? body.customerName.trim() : '';
   const customerEmail = typeof body.customerEmail === 'string' ? body.customerEmail.trim() : '';
   const llcName = typeof body.llcName === 'string' ? body.llcName.trim() : '';
@@ -43,10 +46,10 @@ export async function POST(request: Request) {
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
     return NextResponse.json({ error: 'Order service unavailable. Contact support@justmyllc.com.' }, { status: 503 });
   }
-  const requestHash = tokenHash(JSON.stringify([customerName, customerEmail, phone, llcName, designator, entity, state, ownership, sCorpEligible, total, ...(body.plan !== undefined ? [plan] : []), ...(body.premiumPackage !== undefined ? [premiumPackage] : []), ...(contact ? [contact] : []), ...(businessMail ? [businessMail] : []), ...(members ? [members] : []), ...(body.orderUpdatesConsent !== undefined ? [orderUpdatesConsent] : [])]));
+  const requestHash = tokenHash(JSON.stringify([customerName, customerEmail, phone, llcName, designator, entity, state, ownership, sCorpEligible, total, ...(body.plan !== undefined ? [plan] : []), ...(body.premiumPackage !== undefined ? [premiumPackage] : []), ...(contact ? [contact] : []), ...(businessMail ? [businessMail] : []), ...(members ? [members] : []), ...(registeredAgent ? [registeredAgent] : []), ...(body.orderUpdatesConsent !== undefined ? [orderUpdatesConsent] : [])]));
   try {
     const { data: order, error } = await supabaseAdmin.from('orders').insert({
-      ...(contact ? { contact_details: { ...contact, ...(members ? { members } : {}), ...(businessMail ? { businessMail } : {}), ...(body.orderUpdatesConsent !== undefined ? { orderUpdatesConsent, orderUpdatesConsentAt: orderUpdatesConsent ? new Date().toISOString() : null, orderUpdatesConsentVersion: '2026-09-26' } : {}) } } : {}),
+      ...(contact ? { contact_details: { ...contact, ...(registeredAgent ? { registeredAgent } : {}), ...(members ? { members } : {}), ...(businessMail ? { businessMail } : {}), ...(body.orderUpdatesConsent !== undefined ? { orderUpdatesConsent, orderUpdatesConsentAt: orderUpdatesConsent ? new Date().toISOString() : null, orderUpdatesConsentVersion: '2026-09-26' } : {}) } } : {}),
       customer_name: customerName, customer_email: customerEmail, customer_phone: phone,
       llc_name: llcName, designator, entity_type: entity, formation_state: state,
       ownership: entity === 'LLC' ? ownership : null, s_corp_eligible: entity === 'S-Corp',
