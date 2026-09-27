@@ -25,6 +25,7 @@ export async function POST(request: Request) {
   if (members === null || (members && (!contact || (entity === 'LLC' && ownership !== (members.length === 1 ? 'single' : 'multiple'))))) return NextResponse.json({ error: 'Invalid owner details' }, { status: 400 });
   const registeredAgent = body.registeredAgent === undefined ? undefined : parseRegisteredAgent(body.registeredAgent, state);
   if (registeredAgent === null || (registeredAgent && !contact)) return NextResponse.json({ error: 'Invalid registered agent' }, { status: 400 });
+  if (body.webService !== undefined && (typeof body.webService !== 'boolean' || !contact)) return NextResponse.json({error:'Invalid website selection'}, {status:400});
   const customerName = typeof body.customerName === 'string' ? body.customerName.trim() : '';
   const customerEmail = typeof body.customerEmail === 'string' ? body.customerEmail.trim() : '';
   const llcName = typeof body.llcName === 'string' ? body.llcName.trim() : '';
@@ -47,7 +48,7 @@ export async function POST(request: Request) {
     try { const result = await checkDomain(domain.name); if (!result.available || result.premium || result.price === null || domain.price !== result.price) return NextResponse.json({ error: 'Domain is not available at this price' }, { status: 409 }); domainPrice = result.price; }
     catch { return NextResponse.json({ error: 'Domain availability could not be confirmed' }, { status: 503 }); }
   }
-  const total = quote ? quote.total + (premiumPackage ? PREMIUM_PACKAGE_USD : 0) + einFee + domainPrice : 0;
+  const total = quote ? quote.total + (premiumPackage ? PREMIUM_PACKAGE_USD : 0) + einFee + domainPrice + (body.webService === true ? 70 : 0) : 0;
   const suffixes = entity === 'LLC' ? ['LLC', 'L.L.C.'] : ['Inc.', 'Corporation'];
   if (!validToken(body.orderToken) || body.acceptTerms !== true || !quote || !customerName || customerName.length > 200 || !llcName || llcName.length > 200 ||
       customerEmail.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail) || phone.length > 40 ||
@@ -58,10 +59,10 @@ export async function POST(request: Request) {
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
     return NextResponse.json({ error: 'Order service unavailable. Contact support@justmyllc.com.' }, { status: 503 });
   }
-  const requestHash = tokenHash(JSON.stringify([customerName, customerEmail, phone, llcName, designator, entity, state, ownership, sCorpEligible, total, ...(domain ? [domain] : []), ...(body.einRequested !== undefined ? [ein] : []), ...(body.plan !== undefined ? [plan] : []), ...(body.premiumPackage !== undefined ? [premiumPackage] : []), ...(contact ? [contact] : []), ...(businessMail ? [businessMail] : []), ...(members ? [members] : []), ...(registeredAgent ? [registeredAgent] : []), ...(body.orderUpdatesConsent !== undefined ? [orderUpdatesConsent] : [])]));
+  const requestHash = tokenHash(JSON.stringify([customerName, customerEmail, phone, llcName, designator, entity, state, ownership, sCorpEligible, total, ...(body.webService !== undefined ? [body.webService] : []), ...(domain ? [domain] : []), ...(body.einRequested !== undefined ? [ein] : []), ...(body.plan !== undefined ? [plan] : []), ...(body.premiumPackage !== undefined ? [premiumPackage] : []), ...(contact ? [contact] : []), ...(businessMail ? [businessMail] : []), ...(members ? [members] : []), ...(registeredAgent ? [registeredAgent] : []), ...(body.orderUpdatesConsent !== undefined ? [orderUpdatesConsent] : [])]));
   try {
     const { data: order, error } = await supabaseAdmin.from('orders').insert({
-      ...(contact ? { contact_details: { ...contact, ...(body.einRequested !== undefined ? { ein } : {}), ...(registeredAgent ? { registeredAgent } : {}), ...(members ? { members } : {}), ...(businessMail ? { businessMail } : {}), ...(body.orderUpdatesConsent !== undefined ? { orderUpdatesConsent, orderUpdatesConsentAt: orderUpdatesConsent ? new Date().toISOString() : null, orderUpdatesConsentVersion: '2026-09-26' } : {}) } } : {}),
+      ...(contact ? { contact_details: { ...contact, ...(body.webService !== undefined ? {webService:body.webService,webServiceFeeUsd:body.webService ? 70 : 0} : {}), ...(body.einRequested !== undefined ? { ein } : {}), ...(registeredAgent ? { registeredAgent } : {}), ...(members ? { members } : {}), ...(businessMail ? { businessMail } : {}), ...(body.orderUpdatesConsent !== undefined ? { orderUpdatesConsent, orderUpdatesConsentAt: orderUpdatesConsent ? new Date().toISOString() : null, orderUpdatesConsentVersion: '2026-09-26' } : {}) } } : {}),
       ...(domain ? {domain_registration: domain, domain_fee_usd: domainPrice, domain_status: 'pending_payment'} : {}),
       customer_name: customerName, customer_email: customerEmail, customer_phone: phone,
       llc_name: llcName, designator, entity_type: entity, formation_state: state,

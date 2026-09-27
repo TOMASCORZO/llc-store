@@ -352,3 +352,13 @@ test('domain endpoint loads five initial domains and ten remaining separately', 
  assert.equal(batches[0].length,5);assert.equal(batches[1].length,10);
  assert.equal(new Set([...batches[0],...batches[1]]).size,15);
 });
+
+test('website service charges $70 once only when explicitly selected', async () => {
+ for(const selected of [true,false]) {
+  const route=api();
+  assert.equal((await route.post({...valid,contact:contactDetails,webService:selected,webServiceFeeUsd:1})).status,201);
+  assert.equal(route.inserted().amount_usd,102+(selected?70:0));
+  assert.equal(route.inserted().contact_details.webServiceFeeUsd,selected?70:0);
+ }
+ assert.equal((await api().post({...valid,contact:contactDetails,webService:'yes'})).status,400);
+});
