@@ -48,6 +48,9 @@ function FormationCheckout() {
   const [plan, setPlan] = useState<PlanId>(isPlanId(requestedPlan) ? requestedPlan : 'standard');
   const [einRequested, setEinRequested] = useState<boolean | null>(null);
   const [premiumPackage, setPremiumPackage] = useState(false);
+  const skipEin = includesEin(plan) || premiumPackage;
+  const visibleSteps = copy.steps.map((label, id) => ({ label, id })).filter(({ id }) => !skipEin || id !== 7);
+  const progressIndex = visibleSteps.findIndex(({ id }) => id === step);
   const initialEntity: EntityType = params.get('entity') === 'S-Corp' ? 'S-Corp' : 'LLC';
   const initialState = params.get('state') || DEFAULT_STATE;
   const [entity, setEntity] = useState<EntityType>(initialEntity);
@@ -85,7 +88,7 @@ function FormationCheckout() {
       setMembersError(false);
       setMailError(false);
       if (step === 1) setSavedContact(readSavedContact());
-      setStep(step + 1);
+      setStep(step === 6 && skipEin ? 8 : step + 1);
       return;
     }
     setIsLoading(true);
@@ -117,9 +120,9 @@ function FormationCheckout() {
     <header className="setup-header">
       <Link href="/" aria-label={t('nav.home')}><Logo size={24} /></Link>
       <nav className="setup-progress" aria-label={copy.progress}>
-        <p className="setup-progress-caption" aria-live="polite">{copy.progress} · {step + 1}/{copy.steps.length} <span>{copy.remaining[step]}</span></p>
-        <ol>{copy.steps.map((label, index) => <li key={label} className={index < step ? 'complete' : index === step ? 'current' : ''} aria-current={index === step ? 'step' : undefined}>
-          <span className="setup-step-circle" aria-hidden="true">{index < step ? '✓' : index + 1}</span><span>{label}</span>
+        <p className="setup-progress-caption" aria-live="polite">{copy.progress} · {progressIndex + 1}/{visibleSteps.length} <span>{copy.remaining[copy.steps.length - visibleSteps.length + progressIndex]}</span></p>
+        <ol>{visibleSteps.map(({ label, id }, index) => <li key={label} className={id < step ? 'complete' : id === step ? 'current' : ''} aria-current={id === step ? 'step' : undefined}>
+          <span className="setup-step-circle" aria-hidden="true">{id < step ? '✓' : index + 1}</span><span>{label}</span>
         </li>)}</ol>
       </nav>
       <Link href="/contact" className="setup-support">{t('footer.contact')}</Link>
@@ -207,7 +210,7 @@ function FormationCheckout() {
           </>}
           {error && <p className="formation-error" role="alert">{t('catalog.error')} <a href="mailto:support@justmyllc.com">Email</a></p>}
           <div className="setup-actions premium-actions">
-            {step === 0 ? <Link href={`/product?entity=${encodeURIComponent(entity)}&state=${encodeURIComponent(state)}&plan=${plan}`} className="btn btn-outline">← {copy.back}</Link> : <button type="button" className="btn btn-outline" onClick={() => { setError(false); setStep(step - 1); }}>← {copy.back}</button>}
+            {step === 0 ? <Link href={`/product?entity=${encodeURIComponent(entity)}&state=${encodeURIComponent(state)}&plan=${plan}`} className="btn btn-outline">← {copy.back}</Link> : <button type="button" className="btn btn-outline" onClick={() => { setError(false); setStep(step === 8 && skipEin ? 6 : step - 1); }}>← {copy.back}</button>}
             {step === 4 ? <><button type="button" className="btn btn-outline" onClick={()=>{setPremiumPackage(false);setStep(5);}}>{lang === 'es' ? 'No, gracias' : 'No thanks'}</button><button type="button" className="btn btn-accent btn-xl" onClick={()=>{setPremiumPackage(true);setStep(5);}}>{lang === 'es' ? 'Agregar paquete · $99 →' : 'Add package · $99 →'}</button></> : <button type="submit" className="btn btn-accent btn-xl" disabled={isLoading || (step === 8 && (!acceptTerms || (entity === 'S-Corp' && !eligible)))}>
               {step < 8 ? `${copy.next} →` : isLoading ? t('catalog.sending') : `${t('catalog.submit')} · ${formatUsd(getFormationQuote(state, entity, plan)!.total + (premiumPackage ? PREMIUM_PACKAGE_USD : 0) + einServiceFee(plan, premiumPackage, einRequested === true))}`}
             </button>}
