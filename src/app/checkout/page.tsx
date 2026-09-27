@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { useLanguage } from '@/i18n/LanguageContext';
 import OrderUpdatesConsent from '@/components/OrderUpdatesConsent';
 import { SavedContact, readSavedContact, rememberRegisteredContact, forgetSavedContact } from '@/lib/saved-contact';
+import PremiumPackage from '@/components/PremiumPackage';
+import PlanComparison from '@/components/PlanComparison';
 import BusinessMailStep from '@/components/BusinessMailStep';
 import { EMPTY_BUSINESS_ADDRESS, parseBusinessMail, type BusinessAddress } from '@/lib/business-mail';
 import ContactFields from '@/components/ContactFields';
@@ -15,7 +17,7 @@ import Footer from '@/components/Footer';
 import FormationSelector from '@/components/FormationSelector';
 import StateFilingTime, { filingCopy } from '@/components/StateFilingTime';
 import FormationSummary from '@/components/FormationSummary';
-import { DEFAULT_STATE, EntityType, formatUsd, getFormationQuote } from '@/lib/formation';
+import { DEFAULT_STATE, EntityType, formatUsd, getFormationQuote, PlanId, isPlanId, includesEin, PREMIUM_PACKAGE_USD } from '@/lib/formation';
 
 
 const setupCopy = {
@@ -31,12 +33,15 @@ function FormationCheckout() {
   const { t, lang } = useLanguage();
   const baseCopy = setupCopy[lang];
   const mailTitle = { en: 'Business mailing address', es: 'Dirección comercial', pt: 'Endereço comercial', fr: 'Adresse professionnelle', de: 'Geschäftsadresse', zh: '公司地址' }[lang];
-  const copy = { ...baseCopy, steps: [baseCopy.steps[0], filingCopy[lang].title, baseCopy.steps[1], mailTitle, baseCopy.steps[2]], remaining: [{ en: '4 steps remaining', es: 'Quedan 4 pasos', pt: 'Faltam 4 etapas', fr: '4 étapes restantes', de: 'Noch 4 Schritte', zh: '还剩4步' }[lang], filingCopy[lang].remaining, ...baseCopy.remaining] };
+  const copy = { ...baseCopy, steps: [baseCopy.steps[0], filingCopy[lang].title, baseCopy.steps[1], mailTitle, lang === 'es' ? 'Paquete premium' : 'Premium Service Package', baseCopy.steps[2]], remaining: [{ en: '5 steps remaining', es: 'Quedan 5 pasos', pt: 'Faltam 5 etapas', fr: '5 étapes restantes', de: 'Noch 5 Schritte', zh: '还剩5步' }[lang], { en: '4 steps remaining', es: 'Quedan 4 pasos', pt: 'Faltam 4 etapas', fr: '4 étapes restantes', de: 'Noch 4 Schritte', zh: '还剩4步' }[lang], filingCopy[lang].remaining, ...baseCopy.remaining] };
   const [step, setStep] = useState(0);
   const stepHeading = useRef<HTMLHeadingElement>(null);
   useEffect(() => { stepHeading.current?.focus({ preventScroll: true }); window.scrollTo({ top: 0, behavior: 'instant' }); }, [step]);
   const params = useSearchParams();
   const router = useRouter();
+  const requestedPlan = params.get('plan');
+  const [plan, setPlan] = useState<PlanId>(isPlanId(requestedPlan) ? requestedPlan : 'standard');
+  const [premiumPackage, setPremiumPackage] = useState(false);
   const initialEntity: EntityType = params.get('entity') === 'S-Corp' ? 'S-Corp' : 'LLC';
   const initialState = params.get('state') || DEFAULT_STATE;
   const [entity, setEntity] = useState<EntityType>(initialEntity);
@@ -60,7 +65,7 @@ function FormationCheckout() {
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
-    if (step < 4) {
+    if (step < 5) {
       if (step === 3 && !businessMail) { setMailError(true); return; }
       setMailError(false);
       if (step === 1) setSavedContact(readSavedContact());
@@ -75,7 +80,7 @@ function FormationCheckout() {
       }
       const response = await fetch('/api/orders', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderToken: orderToken.current, acceptTerms, ...formData, customerName: `${contact.firstName.trim()} ${contact.lastName.trim()}`, contact, businessMail, orderUpdatesConsent, entity, state, sCorpEligible: eligible, ownership: entity === 'LLC' ? ownership : null, locale: lang }),
+        body: JSON.stringify({ orderToken: orderToken.current, acceptTerms, ...formData, customerName: `${contact.firstName.trim()} ${contact.lastName.trim()}`, contact, businessMail, plan, premiumPackage, orderUpdatesConsent, entity, state, sCorpEligible: eligible, ownership: entity === 'LLC' ? ownership : null, locale: lang }),
       });
       const data = await response.json();
       if (!response.ok || typeof data.orderId !== 'string') throw new Error('Request failed');
@@ -111,6 +116,7 @@ function FormationCheckout() {
         <fieldset disabled={isLoading} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
           <legend className="sr-only">{copy.steps[step]}</legend>
           {step === 0 && <>
+          <PlanComparison selected={plan} onSelect={setPlan} />
           <div className="form-row">
             <div className="form-group"><label htmlFor="company">{t('catalog.company')}</label>
               <input id="company" required pattern={".*\\S.*"} maxLength={200} autoComplete="organization" value={formData.llcName} onChange={e => setFormData({ ...formData, llcName: e.target.value })} />
@@ -170,8 +176,9 @@ function FormationCheckout() {
           <BusinessMailStep state={state} choice={mailChoice} onChoice={value => { setMailChoice(value); setMailError(false); }} different={differentAddress} onDifferent={value => { setDifferentAddress(value); setMailError(false); }} address={businessAddress} onAddress={value => { setBusinessAddress(value); setMailError(false); }} contact={contact} />
           {mailError && <p className="formation-error" role="alert">{lang === 'es' ? 'Ingresá una dirección física válida. Si tu dirección de contacto es un P.O. Box, elegí una dirección diferente. Para EE. UU., incluí el estado y un código ZIP válido.' : 'Enter a valid physical street address. If your contact address is a P.O. Box, choose a different address. US addresses need a state and valid ZIP code.'}</p>}
           </>}
-          {step === 4 && <>
-          <dl className="setup-review">
+          {step === 4 && <PremiumPackage entity={entity} einIncluded={includesEin(plan)} />}
+          {step === 5 && <>
+          <dl className="setup-review"><div><dt>Plan</dt><dd>{formatUsd(getFormationQuote(state, entity, plan)!.serviceFee)}</dd></div><div><dt>{lang === 'es' ? 'Paquete premium' : 'Premium package'}</dt><dd>{premiumPackage ? formatUsd(PREMIUM_PACKAGE_USD) : (lang === 'es' ? 'No seleccionado' : 'Not selected')}</dd></div>
             <div><dt>{t('catalog.company')}</dt><dd>{formData.llcName} {formData.designator}</dd></div>
             <div><dt>{t('catalog.name')}</dt><dd>{contact.firstName} {contact.lastName}</dd></div>
             <div><dt>{lang === 'es' ? 'Dirección de contacto' : 'Contact address'}</dt><dd>{[contact.street, contact.addressLine2, contact.city, contact.region, contact.postalCode, contact.country].filter(Boolean).join(', ')}</dd></div>
@@ -186,11 +193,11 @@ function FormationCheckout() {
           </label>
           </>}
           {error && <p className="formation-error" role="alert">{t('catalog.error')} <a href="mailto:support@justmyllc.com">Email</a></p>}
-          <div className="setup-actions">
-            {step === 0 ? <Link href={`/product?entity=${encodeURIComponent(entity)}&state=${encodeURIComponent(state)}`} className="btn btn-outline">← {copy.back}</Link> : <button type="button" className="btn btn-outline" onClick={() => { setError(false); setStep(step - 1); }}>← {copy.back}</button>}
-            <button type="submit" className="btn btn-accent btn-xl" disabled={isLoading || (step === 4 && (!acceptTerms || (entity === 'S-Corp' && !eligible)))}>
-              {step < 4 ? `${copy.next} →` : isLoading ? t('catalog.sending') : `${t('catalog.submit')} · ${formatUsd(getFormationQuote(state, entity)!.total)}`}
-            </button>
+          <div className="setup-actions premium-actions">
+            {step === 0 ? <Link href={`/product?entity=${encodeURIComponent(entity)}&state=${encodeURIComponent(state)}&plan=${plan}`} className="btn btn-outline">← {copy.back}</Link> : <button type="button" className="btn btn-outline" onClick={() => { setError(false); setStep(step - 1); }}>← {copy.back}</button>}
+            {step === 4 ? <><button type="button" className="btn btn-outline" onClick={()=>{setPremiumPackage(false);setStep(5);}}>{lang === 'es' ? 'No, gracias' : 'No thanks'}</button><button type="button" className="btn btn-accent btn-xl" onClick={()=>{setPremiumPackage(true);setStep(5);}}>{lang === 'es' ? 'Agregar paquete · $99 →' : 'Add package · $99 →'}</button></> : <button type="submit" className="btn btn-accent btn-xl" disabled={isLoading || (step === 5 && (!acceptTerms || (entity === 'S-Corp' && !eligible)))}>
+              {step < 5 ? `${copy.next} →` : isLoading ? t('catalog.sending') : `${t('catalog.submit')} · ${formatUsd(getFormationQuote(state, entity, plan)!.total + (premiumPackage ? PREMIUM_PACKAGE_USD : 0))}`}
+            </button>}
           </div>
         </fieldset>
       </form>
@@ -202,10 +209,10 @@ function FormationCheckout() {
     </div>
     <aside className="setup-summary"><div className="card" style={{ padding: 28 }}>
       <h2 className="t-h3 setup-summary-title">{copy.summary}</h2>
-      <FormationSummary state={state} entity={entity} />
+      <FormationSummary state={state} entity={entity} plan={plan} premiumPackage={premiumPackage} />
       {step >= 3 && <p className="formation-note">{mailChoice === 'virtual' ? (lang === 'es' ? 'Dirección virtual: solicitud pendiente de confirmación; sin cargo agregado hoy.' : 'Virtual address: request awaiting confirmation; no charge added today.') : (lang === 'es' ? 'Correspondencia: dirección propia.' : 'Business mail: own address.')}</p>}
-      <p className="formation-note">{t('pricing.desc')}</p>
-      <ul className="pricing-features">{(t('pricing.features') as string[]).filter((_, i) => i !== 6 || entity === 'S-Corp').map(feature => <li key={feature}>{feature}</li>)}</ul>
+
+      <ul className="pricing-features">{(t('pricing.features') as string[]).filter((_, i) => (i !== 6 || entity === 'S-Corp') && (i !== 3 || includesEin(plan) || premiumPackage)).map(feature => <li key={feature}>{feature}</li>)}</ul>
       <p className="formation-note">{t('catalog.extras')}</p>
     </div></aside>
   </main></>;

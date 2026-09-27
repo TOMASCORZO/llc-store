@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import TopNav from '@/components/TopNav';
 import Footer from '@/components/Footer';
@@ -9,5 +10,5 @@ export const metadata: Metadata = {
 };
 
 export default function ProductPage() {
-  return <><TopNav /><main><ProductFormation /></main><Footer /></>;
+  return <><TopNav /><main><Suspense fallback={null}><ProductFormation /></Suspense></main><Footer /></>;
 }

@@ -243,3 +243,20 @@ test('business mail validates addresses and stores virtual requests without addi
   assert.match(businessMailModule.addressWarning('Florida',false),/Florida.*principal office/);
   assert.match(businessMailModule.addressWarning('New Mexico',false),/New Mexico/);
 });
+
+test('plans and optional premium package are priced server-side with correct EIN inclusion', async () => {
+  for (const [plan, fee] of [['basic',0],['standard',50],['premium',99]]) {
+    assert.equal(catalog.includesEin(plan),fee >= 50);
+    for (const premiumPackage of [false,true]) {
+      const route = api();
+      const result = await route.post({...valid,plan,premiumPackage,amount_usd:1,premium_package_fee_usd:1});
+      assert.equal(result.status,201);
+      assert.equal(route.inserted().amount_usd,52+fee+(premiumPackage ? 99 : 0));
+      assert.equal(route.inserted().service_fee_usd,fee);
+      assert.equal(route.inserted().plan_id,plan);
+      assert.equal(route.inserted().premium_package,premiumPackage);
+      assert.equal((await result.json()).quote.total,52+fee+(premiumPackage ? 99 : 0));
+    }
+  }
+  for (const change of [{plan:'invalid'}, {plan:0}, {premiumPackage:'true'}]) assert.equal((await api().post({...valid,...change})).status,400);
+});

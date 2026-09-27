@@ -3,7 +3,7 @@ import { parseContact } from '@/lib/contact';
 import { tokenHash, validToken, TERMS_VERSION } from '@/lib/payments';
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
-import { getFormationQuote } from '@/lib/formation';
+import { getFormationQuote, isPlanId, PREMIUM_PACKAGE_USD } from '@/lib/formation';
 
 export async function POST(request: Request) {
   let body;
@@ -25,7 +25,11 @@ export async function POST(request: Request) {
   if ((body.orderUpdatesConsent !== undefined && typeof body.orderUpdatesConsent !== 'boolean') || (orderUpdatesConsent && (!phone || !contact))) {
     return NextResponse.json({ error: 'Invalid order updates consent or missing phone' }, { status: 400 });
   }
-  const quote = getFormationQuote(state, entity);
+  const plan = body.plan === undefined ? 'standard' : body.plan;
+  if (!isPlanId(plan) || (body.premiumPackage !== undefined && typeof body.premiumPackage !== 'boolean')) return NextResponse.json({ error: 'Invalid plan or package' }, { status: 400 });
+  const premiumPackage = body.premiumPackage === true;
+  const quote = getFormationQuote(state, entity, plan);
+  const total = quote ? quote.total + (premiumPackage ? PREMIUM_PACKAGE_USD : 0) : 0;
   const suffixes = entity === 'LLC' ? ['LLC', 'L.L.C.'] : ['Inc.', 'Corporation'];
   if (!validToken(body.orderToken) || body.acceptTerms !== true || !quote || !customerName || customerName.length > 200 || !llcName || llcName.length > 200 ||
       customerEmail.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail) || phone.length > 40 ||
@@ -36,14 +40,15 @@ export async function POST(request: Request) {
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
     return NextResponse.json({ error: 'Order service unavailable. Contact support@justmyllc.com.' }, { status: 503 });
   }
-  const requestHash = tokenHash(JSON.stringify([customerName, customerEmail, phone, llcName, designator, entity, state, ownership, sCorpEligible, quote.total, ...(contact ? [contact] : []), ...(businessMail ? [businessMail] : []), ...(body.orderUpdatesConsent !== undefined ? [orderUpdatesConsent] : [])]));
+  const requestHash = tokenHash(JSON.stringify([customerName, customerEmail, phone, llcName, designator, entity, state, ownership, sCorpEligible, total, ...(body.plan !== undefined ? [plan] : []), ...(body.premiumPackage !== undefined ? [premiumPackage] : []), ...(contact ? [contact] : []), ...(businessMail ? [businessMail] : []), ...(body.orderUpdatesConsent !== undefined ? [orderUpdatesConsent] : [])]));
   try {
     const { data: order, error } = await supabaseAdmin.from('orders').insert({
       ...(contact ? { contact_details: { ...contact, ...(businessMail ? { businessMail } : {}), ...(body.orderUpdatesConsent !== undefined ? { orderUpdatesConsent, orderUpdatesConsentAt: orderUpdatesConsent ? new Date().toISOString() : null, orderUpdatesConsentVersion: '2026-09-26' } : {}) } } : {}),
       customer_name: customerName, customer_email: customerEmail, customer_phone: phone,
       llc_name: llcName, designator, entity_type: entity, formation_state: state,
       ownership: entity === 'LLC' ? ownership : null, s_corp_eligible: entity === 'S-Corp',
-      amount_usd: quote.total, formation_fee_usd: quote.formationFee, service_fee_usd: quote.serviceFee,
+      plan_id: plan, premium_package: premiumPackage, premium_package_fee_usd: premiumPackage ? PREMIUM_PACKAGE_USD : 0,
+      amount_usd: total, formation_fee_usd: quote.formationFee, service_fee_usd: quote.serviceFee,
       state_fee_usd: quote.stateFee, pricing_verified_at: quote.verifiedAt,
       request_hash: requestHash, access_token_hash: tokenHash(body.orderToken), terms_version: TERMS_VERSION, terms_accepted_at: new Date().toISOString(),
       status: 'pending_payment', locale: ['en', 'es', 'pt', 'fr', 'de', 'zh'].includes(body.locale) ? body.locale : 'en',
@@ -56,7 +61,7 @@ export async function POST(request: Request) {
     if (error || !order) {
       return NextResponse.json({ error: 'Failed to save order' }, { status: 500 });
     }
-    return NextResponse.json({ orderId: order.id, status: order.status, quote }, { status: 201 });
+    return NextResponse.json({ orderId: order.id, status: order.status, quote: { ...quote, premiumPackageFee: premiumPackage ? PREMIUM_PACKAGE_USD : 0, total } }, { status: 201 });
   } catch {
     return NextResponse.json({ error: 'Order service unavailable' }, { status: 503 });
   }
