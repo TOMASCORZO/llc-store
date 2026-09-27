@@ -1100,3 +1100,10 @@ html { scroll-padding-top: 100px; }
 @media(max-width:600px) { .member-address-grid { grid-template-columns: 1fr; }.setup-progress li { font-size: 10px; }.setup-step-circle { flex-shrink: 0; } }
 .agent-benefits { list-style: none; padding: 0; margin: 24px 0; }.agent-benefits li { display: flex; gap: 15px; padding: 10px 0; color: var(--ink-2); font-weight: 500; line-height: 1.6; }.agent-benefits span { color: var(--accent); }.agent-options { border-top: 1px solid var(--line); padding-top: 26px; }.agent-help { padding: 0; margin-top: 28px; }.agent-help details { margin-top: 12px; }
 @media(max-width:600px) { .setup-progress li:not(.current) > span:last-child { display:none; }.setup-progress li.current { min-width: 70px; }.setup-step-circle { width:28px; height:28px; }.setup-progress li:not(:last-child)::after { top:14px; left:calc(50% + 15px); right:calc(-50% + 15px); } }
+
+.ein-step > .t-h4 { margin-bottom: 20px; }
+.ein-benefits { border-top: 1px solid var(--border); margin-top: 30px; padding-top: 30px; }
+.ein-options { margin-top: 30px; }
+.ein-included { display:flex; gap:16px; padding:24px; border:1px solid var(--border); border-radius:16px; margin:28px 0 20px; }
+.ein-included > span { color:var(--accent); font-size:24px; }
+.ein-included p { margin-top:8px; color:var(--text-secondary); }

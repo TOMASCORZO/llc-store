@@ -23,3 +23,8 @@ export function getFormationQuote(state: string, entity: string, plan: PlanId = 
 export function formatUsd(amount: number) {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
 }
+
+export const EIN_SERVICE_USD = 50;
+export function einServiceFee(plan: PlanId, premiumPackage: boolean, requested: boolean) {
+  return requested && !includesEin(plan) && !premiumPackage ? EIN_SERVICE_USD : 0;
+}

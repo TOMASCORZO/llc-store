@@ -293,3 +293,14 @@ test('registered agent enforces physical address and formation state', async () 
   assert.equal(agentModule.parseRegisteredAgent({choice:'service'},'Florida').status,'pending_assignment');
   assert.equal(agentModule.parseRegisteredAgent({...agent,type:'company',companyName:'Example Agent'},'Florida').companyName,'Example Agent');
 });
+
+test('EIN service adds $50 only when not already included and rejects invalid selection', async () => {
+  for (const [plan, premiumPackage, einRequested, fee] of [['basic',false,true,50],['basic',false,false,0],['standard',false,true,0],['premium',false,true,0],['basic',true,true,0]]) {
+    const route=api();
+    assert.equal((await route.post({...valid,contact:contactDetails,plan,premiumPackage,einRequested,einFee:1})).status,201);
+    assert.equal(route.inserted().amount_usd,catalog.getFormationQuote(valid.state,valid.entity,plan).total+(premiumPackage?99:0)+fee);
+    assert.equal(route.inserted().contact_details.ein.feeUsd,fee);
+  }
+  const route=api();
+  assert.equal((await route.post({...valid,contact:contactDetails,einRequested:'yes'})).status,400);
+});
