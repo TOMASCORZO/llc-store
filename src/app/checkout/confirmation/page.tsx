@@ -7,9 +7,9 @@ import TopNav from '@/components/TopNav';
 import Footer from '@/components/Footer';
 import { useLanguage } from '@/i18n/LanguageContext';
 
-type Order = { id: string; status: string; amount_usd: number; entity_type: string; formation_state: string };
+type Order = { id: string; status: string; amount_usd: number; entity_type: string; formation_state: string; domain_status?: string; domain_name?: string };
 function OrderStatus() {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const params = useSearchParams();
   const id = params.get('order');
   const [order, setOrder] = useState<Order | null>(null);
@@ -40,7 +40,7 @@ function OrderStatus() {
         const data = await response.json();
         if (stopped || data.id !== id) return;
         setOrder(data);
-        if (data.status === 'pending_payment' && attempts++ < 20) timer = setTimeout(refresh, 3000);
+        if ((data.status === 'pending_payment' || ['pending_payment','registering','requested'].includes(data.domain_status)) && attempts++ < 20) timer = setTimeout(refresh, 3000);
       } catch { /* Never infer payment from a URL or a provider redirect. */ }
       finally { if (!stopped) setLoading(false); }
     }
@@ -53,6 +53,7 @@ function OrderStatus() {
     {!loading && <>
       <p className="formation-note">{paid ? t('catalog.paidBody') : order ? t('catalog.receivedBody') : t('catalog.empty')}</p>
       {order && <><p>{t('catalog.reference')}: {order.id}</p><p>{order.entity_type} · {order.formation_state} · US${Number(order.amount_usd).toFixed(2)}</p><p>{t('catalog.status')}: {t(`catalog.statuses.${order.status}`)}</p></>}
+      {order?.domain_name && <p>{order.domain_name}: {order.domain_status === 'registered' ? (lang === 'es' ? 'Registrado' : 'Registered') : order.domain_status === 'needs_review' ? (lang === 'es' ? 'Requiere revisión. Contactá a soporte con tu referencia de pedido.' : 'Needs review. Contact support with your order reference.') : (lang === 'es' ? 'Registro pendiente de confirmación' : 'Registration awaiting confirmation')}</p>}
       {order?.status === 'pending_payment' && <button className="btn btn-accent" disabled={paying} onClick={pay}>{paying ? t('catalog.sending') : t('catalog.submit')}</button>}
       {paymentError && !paid && <p className="formation-error" role="alert">{t('catalog.paymentUnavailable')}</p>}
       <p className="formation-note">{t('catalog.contact')} <a href="mailto:support@justmyllc.com">support@justmyllc.com</a></p>

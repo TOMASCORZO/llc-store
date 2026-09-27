@@ -10,6 +10,8 @@ function load(path, imports, env = {}, globals = {}) {
   vm.runInNewContext(ts.transpileModule(fs.readFileSync(path, 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, esModuleInterop: true, target: ts.ScriptTarget.ES2022 } }).outputText, context);
   return context.exports;
 }
+const domainModule = load('src/lib/domains.ts', {});
+const domainProvider = {checkDomain: async name => ({name,available:true,premium:false})};
 const contactModule = load('src/lib/contact.ts', {});
 const businessMailModule = load('src/lib/business-mail.ts', { './contact': contactModule });
 const membersModule = load('src/lib/members.ts', { './contact': contactModule });
@@ -24,7 +26,7 @@ function api(config = env) {
     inserted = data;
     return { select: () => ({ single: async () => ({ data: { id: 'test-order', status: data.status } }) }) };
   } }) };
-  const route = load('src/app/api/orders/route.ts', { 'next/server': { NextResponse }, '@/lib/contact': contactModule, '@/lib/business-mail': businessMailModule, '@/lib/members': membersModule, '@/lib/registered-agent': agentModule, '@/lib/payments': payments, '@/lib/formation': catalog, '@/lib/supabase': { supabaseAdmin } }, config);
+  const route = load('src/app/api/orders/route.ts', { 'next/server': { NextResponse }, '@/lib/domains': domainModule, '@/lib/openprovider': domainProvider, '@/lib/register-domain': {registerPaidDomain: async () => {}}, '@/lib/contact': contactModule, '@/lib/business-mail': businessMailModule, '@/lib/members': membersModule, '@/lib/registered-agent': agentModule, '@/lib/payments': payments, '@/lib/formation': catalog, '@/lib/supabase': { supabaseAdmin } }, config);
   return { post: body => route.POST(new Request('http://localhost/api/orders', { method: 'POST', body: JSON.stringify(body) })), inserted: () => inserted };
 }
 const valid = { orderToken: 'a'.repeat(64), acceptTerms: true, customerName: 'Test User', customerEmail: 'test@example.com', llcName: 'Test Company', entity: 'LLC', state: 'New Mexico', designator: 'LLC', ownership: 'single', locale: 'es' };
@@ -91,7 +93,7 @@ test('webhook only marks matching, signed, paid orders as paid; replay is harmle
     select: () => ({ eq: () => ({ single: async () => ({ data: stored }) }) }),
     update: values => ({ eq: () => ({ eq: async () => { Object.assign(stored, values); updates++; return {}; } }) }),
   }) };
-  const route = load('src/app/api/webhook/route.ts', { 'next/server': { NextResponse }, '@/lib/contact': contactModule, '@/lib/business-mail': businessMailModule, '@/lib/members': membersModule, '@/lib/registered-agent': agentModule, '@/lib/payments': payments, '@/lib/supabase': { supabaseAdmin: db } }, config);
+  const route = load('src/app/api/webhook/route.ts', { 'next/server': { NextResponse }, '@/lib/domains': domainModule, '@/lib/openprovider': domainProvider, '@/lib/register-domain': {registerPaidDomain: async () => {}}, '@/lib/contact': contactModule, '@/lib/business-mail': businessMailModule, '@/lib/members': membersModule, '@/lib/registered-agent': agentModule, '@/lib/payments': payments, '@/lib/supabase': { supabaseAdmin: db } }, config);
   const event = { eventType: 'checkout.completed', object: { id: 'ch_test', status: 'completed', metadata: { order_id: 'order_test' }, order: { id: 'pay_test', status: 'paid', product: 'prod_test', currency: 'USD', amount: 10200 } } };
   async function post(body, signed = true) {
     const raw = JSON.stringify(body);
@@ -123,7 +125,7 @@ test('payment retries reuse a stored session and concurrent attempts cannot crea
       } }) }) }) };
     } }),
   }) };
-  const route = load('src/app/api/orders/payment/route.ts', { 'next/server': { NextResponse }, '@/lib/supabase': { supabaseAdmin: db }, '@/lib/payments': { ...payments, paymentsConfigured: () => true, createPayment: async () => { starts++; return { id: 'ch_test', url: 'https://www.creem.io/payment/test' }; } } });
+  const route = load('src/app/api/orders/payment/route.ts', { 'next/server': { NextResponse }, '@/lib/domains': domainModule, '@/lib/openprovider': domainProvider, '@/lib/register-domain': {registerPaidDomain: async () => {}}, '@/lib/supabase': { supabaseAdmin: db }, '@/lib/payments': { ...payments, paymentsConfigured: () => true, createPayment: async () => { starts++; return { id: 'ch_test', url: 'https://www.creem.io/payment/test' }; } } });
   const request = () => new Request('http://localhost/api/orders/payment', { method: 'POST', headers: { Authorization: `Bearer ${'a'.repeat(64)}` } });
   const results = await Promise.all([route.POST(request()), route.POST(request())]);
   assert.deepEqual(results.map(r => r.status).sort(), [200, 409]);
@@ -134,7 +136,7 @@ test('payment retries reuse a stored session and concurrent attempts cannot crea
   assert.equal((await route.POST(request())).status, 409);
 });
 test('payment endpoint fails closed without configuration or access token', async () => {
-  const route = load('src/app/api/orders/payment/route.ts', { 'next/server': { NextResponse }, '@/lib/supabase': {}, '@/lib/contact': contactModule, '@/lib/business-mail': businessMailModule, '@/lib/members': membersModule, '@/lib/registered-agent': agentModule, '@/lib/payments': payments });
+  const route = load('src/app/api/orders/payment/route.ts', { 'next/server': { NextResponse }, '@/lib/domains': domainModule, '@/lib/openprovider': domainProvider, '@/lib/register-domain': {registerPaidDomain: async () => {}}, '@/lib/supabase': {}, '@/lib/contact': contactModule, '@/lib/business-mail': businessMailModule, '@/lib/members': membersModule, '@/lib/registered-agent': agentModule, '@/lib/payments': payments });
   assert.equal((await route.POST(new Request('http://localhost', { method: 'POST' }))).status, 401);
   assert.equal((await route.POST(new Request('http://localhost', { method: 'POST', headers: { Authorization: `Bearer ${'a'.repeat(64)}` } }))).status, 503);
 });
@@ -150,7 +152,7 @@ test('order retry returns the original reference and rejects changed details', a
     } }) }),
     select: () => ({ eq: () => ({ single: async () => ({ data: stored }) }) }),
   }) };
-  const route = load('src/app/api/orders/route.ts', { 'next/server': { NextResponse }, '@/lib/supabase': { supabaseAdmin: db }, '@/lib/formation': catalog, '@/lib/contact': contactModule, '@/lib/business-mail': businessMailModule, '@/lib/members': membersModule, '@/lib/registered-agent': agentModule, '@/lib/payments': payments }, env);
+  const route = load('src/app/api/orders/route.ts', { 'next/server': { NextResponse }, '@/lib/domains': domainModule, '@/lib/openprovider': domainProvider, '@/lib/register-domain': {registerPaidDomain: async () => {}}, '@/lib/supabase': { supabaseAdmin: db }, '@/lib/formation': catalog, '@/lib/contact': contactModule, '@/lib/business-mail': businessMailModule, '@/lib/members': membersModule, '@/lib/registered-agent': agentModule, '@/lib/payments': payments }, env);
   const request = body => new Request('http://localhost/api/orders', { method: 'POST', body: JSON.stringify(body) });
   assert.equal((await route.POST(request(valid))).status, 201);
   const retry = await route.POST(request(valid));
@@ -303,4 +305,32 @@ test('EIN service adds $50 only when not already included and rejects invalid se
   }
   const route=api();
   assert.equal((await route.post({...valid,contact:contactDetails,einRequested:'yes'})).status,400);
+});
+
+test('domain registration is optional, validated and priced on the server', async () => {
+ const domainRegistration={name:'test-company.com',street:'Main Street',number:'123',phoneCountry:'+1',phoneArea:'305',phoneNumber:'5550123',consent:true};
+ const contact={...contactDetails,postalCode:'1878'};
+ const route=api();
+ assert.equal((await route.post({...valid,contact,domainRegistration,domainFee:1})).status,201);
+ assert.equal(route.inserted().amount_usd,118);
+ assert.equal(route.inserted().domain_fee_usd,16);
+ assert.equal(route.inserted().domain_status,'pending_payment');
+ for(const patch of [{name:'bad.net'},{name:'https://example.com'},{consent:false},{phoneCountry:'1'},{number:''}]) {
+  assert.equal((await api().post({...valid,contact,domainRegistration:{...domainRegistration,...patch}})).status,400);
+ }
+});
+
+test('paid domain registration claims once and quarantines uncertain results', async () => {
+ for (const fail of [false,true]) {
+  let claimed=false, calls=0, status='pending_payment';
+  const order={id:'order-domain',domain_registration:{name:'example-test.com',street:'Main',number:'1',phoneCountry:'+1',phoneArea:'305',phoneNumber:'5550123'},contact_details:{...contactDetails,postalCode:'1878'},customer_email:'test@example.com'};
+  const db={from:()=>({update:patch=>{
+   const chain={eq:()=>chain,select:()=>chain,maybeSingle:async()=>{if(claimed)return {data:null};claimed=true;return {data:order};},then:resolve=>{if(patch.domain_status)status=patch.domain_status;return Promise.resolve(resolve({error:null}));}};return chain;
+  }})};
+  const module=load('src/lib/register-domain.ts',{'./supabase':{supabaseAdmin:db},'./openprovider':{checkDomain:async()=>({available:true,premium:false}),providerRequest:async path=>{calls++;if(path==='customers')return {handle:'TEST-HANDLE'};if(fail)throw new Error('Timeout');return {id:123,status:'ACT'};}}});
+  await module.registerPaidDomain(order.id);
+  assert.equal(status,fail?'needs_review':'registered');
+  await module.registerPaidDomain(order.id);
+  assert.equal(calls,2);
+ }
 });

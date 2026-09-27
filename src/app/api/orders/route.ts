@@ -1,3 +1,5 @@
+import { parseDomainRegistration, DOMAIN_PRICE_USD } from '@/lib/domains';
+import { checkDomain } from '@/lib/openprovider';
 import { parseRegisteredAgent } from '@/lib/registered-agent';
 import { parseMembers } from '@/lib/members';
 import { parseBusinessMail } from '@/lib/business-mail';
@@ -38,7 +40,13 @@ export async function POST(request: Request) {
   const einFee = einServiceFee(plan, premiumPackage, body.einRequested === true);
   const ein = { requested: includesEin(plan) || premiumPackage || body.einRequested === true, feeUsd: einFee };
   const quote = getFormationQuote(state, entity, plan);
-  const total = quote ? quote.total + (premiumPackage ? PREMIUM_PACKAGE_USD : 0) + einFee : 0;
+  const domain = body.domainRegistration == null ? null : parseDomainRegistration(body.domainRegistration);
+  if (body.domainRegistration != null && (!domain || !contact || !contact.postalCode)) return NextResponse.json({ error: 'Invalid domain contact' }, { status: 400 });
+  if (domain) {
+    try { const result = await checkDomain(domain.name); if (!result.available || result.premium) return NextResponse.json({ error: 'Domain is not available at this price' }, { status: 409 }); }
+    catch { return NextResponse.json({ error: 'Domain availability could not be confirmed' }, { status: 503 }); }
+  }
+  const total = quote ? quote.total + (premiumPackage ? PREMIUM_PACKAGE_USD : 0) + einFee + (domain ? DOMAIN_PRICE_USD : 0) : 0;
   const suffixes = entity === 'LLC' ? ['LLC', 'L.L.C.'] : ['Inc.', 'Corporation'];
   if (!validToken(body.orderToken) || body.acceptTerms !== true || !quote || !customerName || customerName.length > 200 || !llcName || llcName.length > 200 ||
       customerEmail.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail) || phone.length > 40 ||
@@ -49,10 +57,11 @@ export async function POST(request: Request) {
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
     return NextResponse.json({ error: 'Order service unavailable. Contact support@justmyllc.com.' }, { status: 503 });
   }
-  const requestHash = tokenHash(JSON.stringify([customerName, customerEmail, phone, llcName, designator, entity, state, ownership, sCorpEligible, total, ...(body.einRequested !== undefined ? [ein] : []), ...(body.plan !== undefined ? [plan] : []), ...(body.premiumPackage !== undefined ? [premiumPackage] : []), ...(contact ? [contact] : []), ...(businessMail ? [businessMail] : []), ...(members ? [members] : []), ...(registeredAgent ? [registeredAgent] : []), ...(body.orderUpdatesConsent !== undefined ? [orderUpdatesConsent] : [])]));
+  const requestHash = tokenHash(JSON.stringify([customerName, customerEmail, phone, llcName, designator, entity, state, ownership, sCorpEligible, total, ...(domain ? [domain] : []), ...(body.einRequested !== undefined ? [ein] : []), ...(body.plan !== undefined ? [plan] : []), ...(body.premiumPackage !== undefined ? [premiumPackage] : []), ...(contact ? [contact] : []), ...(businessMail ? [businessMail] : []), ...(members ? [members] : []), ...(registeredAgent ? [registeredAgent] : []), ...(body.orderUpdatesConsent !== undefined ? [orderUpdatesConsent] : [])]));
   try {
     const { data: order, error } = await supabaseAdmin.from('orders').insert({
       ...(contact ? { contact_details: { ...contact, ...(body.einRequested !== undefined ? { ein } : {}), ...(registeredAgent ? { registeredAgent } : {}), ...(members ? { members } : {}), ...(businessMail ? { businessMail } : {}), ...(body.orderUpdatesConsent !== undefined ? { orderUpdatesConsent, orderUpdatesConsentAt: orderUpdatesConsent ? new Date().toISOString() : null, orderUpdatesConsentVersion: '2026-09-26' } : {}) } } : {}),
+      ...(domain ? {domain_registration: domain, domain_fee_usd: DOMAIN_PRICE_USD, domain_status: 'pending_payment'} : {}),
       customer_name: customerName, customer_email: customerEmail, customer_phone: phone,
       llc_name: llcName, designator, entity_type: entity, formation_state: state,
       ownership: entity === 'LLC' ? ownership : null, s_corp_eligible: entity === 'S-Corp',
