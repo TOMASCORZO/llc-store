@@ -135,7 +135,7 @@ function FormationCheckout() {
     <main className="setup-layout">
     <div>
       <section className="setup-form-card card">
-      <h1 className="t-h3" tabIndex={-1} ref={stepHeading}>{copy.steps[step]}</h1>
+      <h1 className="t-h3" tabIndex={-1} ref={stepHeading}>{step === 9 ? (lang === 'es' ? 'Una web para presentar tu empresa · $70, pago único' : 'A website to introduce your business · $70, one-time payment') : copy.steps[step]}</h1>
       <form onSubmit={handleSubmit}>
         <fieldset disabled={isLoading} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
           <legend className="sr-only">{copy.steps[step]}</legend>
