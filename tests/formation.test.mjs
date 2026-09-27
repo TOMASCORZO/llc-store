@@ -12,6 +12,7 @@ function load(path, imports, env = {}, globals = {}) {
 }
 const contactModule = load('src/lib/contact.ts', {});
 const businessMailModule = load('src/lib/business-mail.ts', { './contact': contactModule });
+const membersModule = load('src/lib/members.ts', { './contact': contactModule });
 const payments = load('src/lib/payments.ts', { 'node:crypto': crypto });
 const catalog = load('src/lib/formation.ts', { './formation-prices.json': prices });
 import { NextResponse } from 'next/server.js';
@@ -22,7 +23,7 @@ function api(config = env) {
     inserted = data;
     return { select: () => ({ single: async () => ({ data: { id: 'test-order', status: data.status } }) }) };
   } }) };
-  const route = load('src/app/api/orders/route.ts', { 'next/server': { NextResponse }, '@/lib/contact': contactModule, '@/lib/business-mail': businessMailModule, '@/lib/payments': payments, '@/lib/formation': catalog, '@/lib/supabase': { supabaseAdmin } }, config);
+  const route = load('src/app/api/orders/route.ts', { 'next/server': { NextResponse }, '@/lib/contact': contactModule, '@/lib/business-mail': businessMailModule, '@/lib/members': membersModule, '@/lib/payments': payments, '@/lib/formation': catalog, '@/lib/supabase': { supabaseAdmin } }, config);
   return { post: body => route.POST(new Request('http://localhost/api/orders', { method: 'POST', body: JSON.stringify(body) })), inserted: () => inserted };
 }
 const valid = { orderToken: 'a'.repeat(64), acceptTerms: true, customerName: 'Test User', customerEmail: 'test@example.com', llcName: 'Test Company', entity: 'LLC', state: 'New Mexico', designator: 'LLC', ownership: 'single', locale: 'es' };
@@ -89,7 +90,7 @@ test('webhook only marks matching, signed, paid orders as paid; replay is harmle
     select: () => ({ eq: () => ({ single: async () => ({ data: stored }) }) }),
     update: values => ({ eq: () => ({ eq: async () => { Object.assign(stored, values); updates++; return {}; } }) }),
   }) };
-  const route = load('src/app/api/webhook/route.ts', { 'next/server': { NextResponse }, '@/lib/contact': contactModule, '@/lib/business-mail': businessMailModule, '@/lib/payments': payments, '@/lib/supabase': { supabaseAdmin: db } }, config);
+  const route = load('src/app/api/webhook/route.ts', { 'next/server': { NextResponse }, '@/lib/contact': contactModule, '@/lib/business-mail': businessMailModule, '@/lib/members': membersModule, '@/lib/payments': payments, '@/lib/supabase': { supabaseAdmin: db } }, config);
   const event = { eventType: 'checkout.completed', object: { id: 'ch_test', status: 'completed', metadata: { order_id: 'order_test' }, order: { id: 'pay_test', status: 'paid', product: 'prod_test', currency: 'USD', amount: 10200 } } };
   async function post(body, signed = true) {
     const raw = JSON.stringify(body);
@@ -132,7 +133,7 @@ test('payment retries reuse a stored session and concurrent attempts cannot crea
   assert.equal((await route.POST(request())).status, 409);
 });
 test('payment endpoint fails closed without configuration or access token', async () => {
-  const route = load('src/app/api/orders/payment/route.ts', { 'next/server': { NextResponse }, '@/lib/supabase': {}, '@/lib/contact': contactModule, '@/lib/business-mail': businessMailModule, '@/lib/payments': payments });
+  const route = load('src/app/api/orders/payment/route.ts', { 'next/server': { NextResponse }, '@/lib/supabase': {}, '@/lib/contact': contactModule, '@/lib/business-mail': businessMailModule, '@/lib/members': membersModule, '@/lib/payments': payments });
   assert.equal((await route.POST(new Request('http://localhost', { method: 'POST' }))).status, 401);
   assert.equal((await route.POST(new Request('http://localhost', { method: 'POST', headers: { Authorization: `Bearer ${'a'.repeat(64)}` } }))).status, 503);
 });
@@ -148,7 +149,7 @@ test('order retry returns the original reference and rejects changed details', a
     } }) }),
     select: () => ({ eq: () => ({ single: async () => ({ data: stored }) }) }),
   }) };
-  const route = load('src/app/api/orders/route.ts', { 'next/server': { NextResponse }, '@/lib/supabase': { supabaseAdmin: db }, '@/lib/formation': catalog, '@/lib/contact': contactModule, '@/lib/business-mail': businessMailModule, '@/lib/payments': payments }, env);
+  const route = load('src/app/api/orders/route.ts', { 'next/server': { NextResponse }, '@/lib/supabase': { supabaseAdmin: db }, '@/lib/formation': catalog, '@/lib/contact': contactModule, '@/lib/business-mail': businessMailModule, '@/lib/members': membersModule, '@/lib/payments': payments }, env);
   const request = body => new Request('http://localhost/api/orders', { method: 'POST', body: JSON.stringify(body) });
   assert.equal((await route.POST(request(valid))).status, 201);
   const retry = await route.POST(request(valid));
@@ -259,4 +260,23 @@ test('plans and optional premium package are priced server-side with correct EIN
     }
   }
   for (const change of [{plan:'invalid'}, {plan:0}, {premiumPackage:'true'}]) assert.equal((await api().post({...valid,...change})).status,400);
+});
+
+
+test('owners validate names, count, company type and resolved addresses before saving', async () => {
+  const contact = {firstName:'Test',lastName:'User',country:'US',street:'123 Main St',addressLine2:'',city:'Miami',region:'Florida',postalCode:'33101'};
+  const member = {...membersModule.emptyMember(),firstName:'Test',lastName:'User'};
+  const own = {choice:'own',address:contact};
+  for (const businessMail of [own,{choice:'virtual'}]) {
+    const route=api();
+    assert.equal((await route.post({...valid,contact,businessMail,members:[member]})).status,201);
+    const saved=route.inserted().contact_details.members[0];
+    assert.equal(saved.firstName,'Test');
+    assert.equal(saved.addressStatus,businessMail.choice === 'own' ? 'provided' : 'pending_virtual_assignment');
+  }
+  const route=api();
+  assert.equal((await route.post({...valid,contact,businessMail:own,ownership:'multiple',members:[member,{...member,type:'company',companyName:'Example Holdings'}]})).status,201);
+  assert.equal(route.inserted().contact_details.members[1].companyName,'Example Holdings');
+  for (const members of [[],[{...member,firstName:' '}],[{...member,useBusinessAddress:false,address:{}}],[member,member]]) assert.equal((await api().post({...valid,contact,businessMail:own,members})).status,400);
+  assert.equal(membersModule.parseMembers([{...member,type:'company',companyName:'Example'}],own,'S-Corp'),null);
 });

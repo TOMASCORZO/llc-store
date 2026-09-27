@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { useLanguage } from '@/i18n/LanguageContext';
 import OrderUpdatesConsent from '@/components/OrderUpdatesConsent';
 import { SavedContact, readSavedContact, rememberRegisteredContact, forgetSavedContact } from '@/lib/saved-contact';
+import MembersStep from '@/components/MembersStep';
+import { emptyMember, parseMembers, type Member } from '@/lib/members';
 import PremiumPackage from '@/components/PremiumPackage';
 import PlanComparison from '@/components/PlanComparison';
 import BusinessMailStep from '@/components/BusinessMailStep';
@@ -33,7 +35,7 @@ function FormationCheckout() {
   const { t, lang } = useLanguage();
   const baseCopy = setupCopy[lang];
   const mailTitle = { en: 'Business mailing address', es: 'Dirección comercial', pt: 'Endereço comercial', fr: 'Adresse professionnelle', de: 'Geschäftsadresse', zh: '公司地址' }[lang];
-  const copy = { ...baseCopy, steps: [baseCopy.steps[0], filingCopy[lang].title, baseCopy.steps[1], mailTitle, lang === 'es' ? 'Paquete premium' : 'Premium Service Package', baseCopy.steps[2]], remaining: [{ en: '5 steps remaining', es: 'Quedan 5 pasos', pt: 'Faltam 5 etapas', fr: '5 étapes restantes', de: 'Noch 5 Schritte', zh: '还剩5步' }[lang], { en: '4 steps remaining', es: 'Quedan 4 pasos', pt: 'Faltam 4 etapas', fr: '4 étapes restantes', de: 'Noch 4 Schritte', zh: '还剩4步' }[lang], filingCopy[lang].remaining, ...baseCopy.remaining] };
+  const copy = { ...baseCopy, steps: [baseCopy.steps[0], filingCopy[lang].title, baseCopy.steps[1], mailTitle, lang === 'es' ? 'Paquete premium' : 'Premium Service Package', lang === 'es' ? 'Propietarios de la empresa' : 'Company owners', baseCopy.steps[2]], remaining: [{ en: '6 steps remaining', es: 'Quedan 6 pasos', pt: 'Faltam 6 etapas', fr: '6 étapes restantes', de: 'Noch 6 Schritte', zh: '还剩6步' }[lang], { en: '5 steps remaining', es: 'Quedan 5 pasos', pt: 'Faltam 5 etapas', fr: '5 étapes restantes', de: 'Noch 5 Schritte', zh: '还剩5步' }[lang], { en: '4 steps remaining', es: 'Quedan 4 pasos', pt: 'Faltam 4 etapas', fr: '4 étapes restantes', de: 'Noch 4 Schritte', zh: '还剩4步' }[lang], filingCopy[lang].remaining, ...baseCopy.remaining] };
   const [step, setStep] = useState(0);
   const stepHeading = useRef<HTMLHeadingElement>(null);
   useEffect(() => { stepHeading.current?.focus({ preventScroll: true }); window.scrollTo({ top: 0, behavior: 'instant' }); }, [step]);
@@ -56,7 +58,10 @@ function FormationCheckout() {
   const [usingSavedContact, setUsingSavedContact] = useState(false);
   const [orderUpdatesConsent, setOrderUpdatesConsent] = useState(true);
   const [eligible, setEligible] = useState(false);
-  const [ownership, setOwnership] = useState('single');
+  const [members, setMembers] = useState<Member[]>([emptyMember()]);
+  const [membersError, setMembersError] = useState(false);
+  const resolvedMembers = members.map(member => member.useContactName && member.type === 'individual' ? {...member,firstName:contact.firstName,lastName:contact.lastName} : member);
+  const ownership = members.length === 1 ? 'single' : 'multiple';
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(false);
   const orderToken = useRef<string | null>(null);
@@ -65,8 +70,10 @@ function FormationCheckout() {
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
-    if (step < 5) {
+    if (step < 6) {
       if (step === 3 && !businessMail) { setMailError(true); return; }
+      if (step === 5 && !parseMembers(resolvedMembers, businessMail, entity)) { setMembersError(true); return; }
+      setMembersError(false);
       setMailError(false);
       if (step === 1) setSavedContact(readSavedContact());
       setStep(step + 1);
@@ -80,7 +87,7 @@ function FormationCheckout() {
       }
       const response = await fetch('/api/orders', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderToken: orderToken.current, acceptTerms, ...formData, customerName: `${contact.firstName.trim()} ${contact.lastName.trim()}`, contact, businessMail, plan, premiumPackage, orderUpdatesConsent, entity, state, sCorpEligible: eligible, ownership: entity === 'LLC' ? ownership : null, locale: lang }),
+        body: JSON.stringify({ orderToken: orderToken.current, acceptTerms, ...formData, customerName: `${contact.firstName.trim()} ${contact.lastName.trim()}`, contact, businessMail, members: resolvedMembers, plan, premiumPackage, orderUpdatesConsent, entity, state, sCorpEligible: eligible, ownership: entity === 'LLC' ? ownership : null, locale: lang }),
       });
       const data = await response.json();
       if (!response.ok || typeof data.orderId !== 'string') throw new Error('Request failed');
@@ -160,12 +167,6 @@ function FormationCheckout() {
             </div>
           </div>
           </div>
-          {entity === 'LLC' && <div className="form-group">
-            <label htmlFor="ownership">{t('catalog.ownership')}</label>
-            <select id="ownership" value={ownership} onChange={e => setOwnership(e.target.value)}>
-              <option value="single">{t('catalog.single')}</option><option value="multiple">{t('catalog.multiple')}</option>
-            </select>
-          </div>}
           {entity === 'S-Corp' && <label className="formation-checkbox">
             <input type="checkbox" checked={eligible} onChange={e => setEligible(e.target.checked)} required />
             <span>{t('catalog.confirmEligibility')}</span>
@@ -177,8 +178,9 @@ function FormationCheckout() {
           {mailError && <p className="formation-error" role="alert">{lang === 'es' ? 'Ingresá una dirección física válida. Si tu dirección de contacto es un P.O. Box, elegí una dirección diferente. Para EE. UU., incluí el estado y un código ZIP válido.' : 'Enter a valid physical street address. If your contact address is a P.O. Box, choose a different address. US addresses need a state and valid ZIP code.'}</p>}
           </>}
           {step === 4 && <PremiumPackage entity={entity} einIncluded={includesEin(plan)} />}
-          {step === 5 && <>
-          <dl className="setup-review"><div><dt>Plan</dt><dd>{formatUsd(getFormationQuote(state, entity, plan)!.serviceFee)}</dd></div><div><dt>{lang === 'es' ? 'Paquete premium' : 'Premium package'}</dt><dd>{premiumPackage ? formatUsd(PREMIUM_PACKAGE_USD) : (lang === 'es' ? 'No seleccionado' : 'Not selected')}</dd></div>
+          {step === 5 && <><MembersStep members={members} onChange={value=>{setMembers(value);setMembersError(false);}} contact={contact} businessMail={businessMail} entity={entity}/>{membersError && <p className="formation-error" role="alert">{lang === 'es' ? 'Revisá los nombres, el tipo de propietario y las direcciones de todos los miembros.' : 'Review the names, owner types, and addresses for every owner.'}</p>}</>}
+          {step === 6 && <>
+          <dl className="setup-review"><div><dt>{lang === 'es' ? 'Propietarios' : 'Owners'}</dt><dd>{resolvedMembers.map(m=>m.type === 'company' ? m.companyName : `${m.firstName} ${m.lastName}`).join('; ')}</dd></div><div><dt>Plan</dt><dd>{formatUsd(getFormationQuote(state, entity, plan)!.serviceFee)}</dd></div><div><dt>{lang === 'es' ? 'Paquete premium' : 'Premium package'}</dt><dd>{premiumPackage ? formatUsd(PREMIUM_PACKAGE_USD) : (lang === 'es' ? 'No seleccionado' : 'Not selected')}</dd></div>
             <div><dt>{t('catalog.company')}</dt><dd>{formData.llcName} {formData.designator}</dd></div>
             <div><dt>{t('catalog.name')}</dt><dd>{contact.firstName} {contact.lastName}</dd></div>
             <div><dt>{lang === 'es' ? 'Dirección de contacto' : 'Contact address'}</dt><dd>{[contact.street, contact.addressLine2, contact.city, contact.region, contact.postalCode, contact.country].filter(Boolean).join(', ')}</dd></div>
@@ -195,13 +197,14 @@ function FormationCheckout() {
           {error && <p className="formation-error" role="alert">{t('catalog.error')} <a href="mailto:support@justmyllc.com">Email</a></p>}
           <div className="setup-actions premium-actions">
             {step === 0 ? <Link href={`/product?entity=${encodeURIComponent(entity)}&state=${encodeURIComponent(state)}&plan=${plan}`} className="btn btn-outline">← {copy.back}</Link> : <button type="button" className="btn btn-outline" onClick={() => { setError(false); setStep(step - 1); }}>← {copy.back}</button>}
-            {step === 4 ? <><button type="button" className="btn btn-outline" onClick={()=>{setPremiumPackage(false);setStep(5);}}>{lang === 'es' ? 'No, gracias' : 'No thanks'}</button><button type="button" className="btn btn-accent btn-xl" onClick={()=>{setPremiumPackage(true);setStep(5);}}>{lang === 'es' ? 'Agregar paquete · $99 →' : 'Add package · $99 →'}</button></> : <button type="submit" className="btn btn-accent btn-xl" disabled={isLoading || (step === 5 && (!acceptTerms || (entity === 'S-Corp' && !eligible)))}>
-              {step < 5 ? `${copy.next} →` : isLoading ? t('catalog.sending') : `${t('catalog.submit')} · ${formatUsd(getFormationQuote(state, entity, plan)!.total + (premiumPackage ? PREMIUM_PACKAGE_USD : 0))}`}
+            {step === 4 ? <><button type="button" className="btn btn-outline" onClick={()=>{setPremiumPackage(false);setStep(5);}}>{lang === 'es' ? 'No, gracias' : 'No thanks'}</button><button type="button" className="btn btn-accent btn-xl" onClick={()=>{setPremiumPackage(true);setStep(5);}}>{lang === 'es' ? 'Agregar paquete · $99 →' : 'Add package · $99 →'}</button></> : <button type="submit" className="btn btn-accent btn-xl" disabled={isLoading || (step === 6 && (!acceptTerms || (entity === 'S-Corp' && !eligible)))}>
+              {step < 6 ? `${copy.next} →` : isLoading ? t('catalog.sending') : `${t('catalog.submit')} · ${formatUsd(getFormationQuote(state, entity, plan)!.total + (premiumPackage ? PREMIUM_PACKAGE_USD : 0))}`}
             </button>}
           </div>
         </fieldset>
       </form>
       </section>
+      {step === 5 && <section className="setup-help card"><h2 className="t-h4">{copy.help}</h2><details><summary>{lang === 'es' ? '¿Qué información de los propietarios aparece en los documentos de constitución?' : 'What owner information appears in formation documents?'}</summary><p>{lang === 'es' ? `Los datos exigidos y su publicación dependen del estado y del tipo de entidad. Confirmaremos qué nombres y direcciones deben incluirse para tu constitución en ${state}. Usar una dirección comercial no garantiza que todos los datos personales sean privados.` : `Required information and public disclosure depend on the state and entity type. We’ll confirm which names and addresses must be included for your ${state} formation. Using a business address does not guarantee that all personal information remains private.`}</p></details></section>}
       {step === 0 && <section className="setup-help card">
         <h2 className="t-h4">{copy.help}</h2>
         {copy.faq.map(([question, answer]) => <details key={question}><summary>{question}</summary><p>{answer}</p></details>)}
