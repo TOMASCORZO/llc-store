@@ -341,3 +341,14 @@ test('domain search quotes USD reseller price plus $6 for each extension', async
  assert.equal(results[0].price,17.98);assert.equal(results[1].price,19);assert.equal(results[2].price,null);
  assert.equal(domainModule.normalizeDomain('test.store'),'test.store');
 });
+
+test('domain endpoint loads five initial domains and ten remaining separately', async () => {
+ const batches=[];
+ const route=load('src/app/api/domains/search/route.ts',{'next/server':{NextResponse},'@/lib/domains':domainModule,'@/lib/openprovider':{checkDomains:async names=>{batches.push(names);return names.map(name=>({name}));}}});
+ for(const batch of ['initial','remaining']) {
+  const response=await route.POST(new Request('http://localhost/api/domains/search',{method:'POST',body:JSON.stringify({domain:'example',batch})}));
+  assert.equal(response.status,200);
+ }
+ assert.equal(batches[0].length,5);assert.equal(batches[1].length,10);
+ assert.equal(new Set([...batches[0],...batches[1]]).size,15);
+});
