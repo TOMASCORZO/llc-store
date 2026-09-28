@@ -1,3 +1,4 @@
+import SupportChat from "@/components/SupportChat";
 import type { Metadata } from "next";
 import { LanguageProvider } from "@/i18n/LanguageContext";
 import "./globals.css";
@@ -17,6 +18,7 @@ export default function RootLayout({
       <body>
         <LanguageProvider>
           {children}
+          <SupportChat />
         </LanguageProvider>
       </body>
     </html>
