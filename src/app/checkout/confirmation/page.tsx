@@ -7,7 +7,7 @@ import TopNav from '@/components/TopNav';
 import Footer from '@/components/Footer';
 import { useLanguage } from '@/i18n/LanguageContext';
 
-type Order = { id: string; status: string; amount_usd: number; entity_type: string; formation_state: string; domain_status?: string; domain_name?: string };
+type Order = { payment_total_cents?: number | null; payment_tax_cents?: number | null; payment_fee_cents?: number | null; id: string; status: string; amount_usd: number; entity_type: string; formation_state: string; domain_status?: string; domain_name?: string };
 function OrderStatus() {
   const { t, lang } = useLanguage();
   const params = useSearchParams();
@@ -52,7 +52,9 @@ function OrderStatus() {
     <h1 className="t-h2">{loading ? t('catalog.loading') : paid ? t('catalog.paid') : order ? t('catalog.received') : t('catalog.request')}</h1>
     {!loading && <>
       <p className="formation-note">{paid ? t('catalog.paidBody') : order ? t('catalog.receivedBody') : t('catalog.empty')}</p>
-      {order && <><p>{t('catalog.reference')}: {order.id}</p><p>{order.entity_type} · {order.formation_state} · US${Number(order.amount_usd).toFixed(2)}</p><p>{t('catalog.status')}: {t(`catalog.statuses.${order.status}`)}</p></>}
+      {order && <><p>{t('catalog.reference')}: {order.id}</p><p>{order.entity_type} · {order.formation_state} · US${(paid && order.payment_total_cents != null ? order.payment_total_cents / 100 : Number(order.amount_usd)).toFixed(2)}</p><p>{t('catalog.status')}: {t(`catalog.statuses.${order.status}`)}</p></>}
+      {order && <p className="formation-note">{paid && order.payment_tax_cents != null ? `${lang === 'es' ? 'Impuestos incluidos' : 'Tax included'}: US$${(order.payment_tax_cents / 100).toFixed(2)}` : (lang === 'es' ? 'Subtotal antes de impuestos. Stripe mostrará el total final antes de pagar.' : 'Subtotal before tax. Stripe will show the final total before payment.')}</p>}
+      {params.get('payment') === 'canceled' && !paid && <p className="formation-note">{lang === 'es' ? 'Volviste sin completar el pago. Podés retomarlo con el botón de abajo.' : 'You returned without completing payment. You can resume using the button below.'}</p>}
       {order?.domain_name && <p>{order.domain_name}: {order.domain_status === 'registered' ? (lang === 'es' ? 'Registrado' : 'Registered') : order.domain_status === 'needs_review' ? (lang === 'es' ? 'Requiere revisión. Contactá a soporte con tu referencia de pedido.' : 'Needs review. Contact support with your order reference.') : (lang === 'es' ? 'Registro pendiente de confirmación' : 'Registration awaiting confirmation')}</p>}
       {order?.status === 'pending_payment' && <button className="btn btn-accent" disabled={paying} onClick={pay}>{paying ? t('catalog.sending') : t('catalog.submit')}</button>}
       {paymentError && !paid && <p className="formation-error" role="alert">{t('catalog.paymentUnavailable')}</p>}

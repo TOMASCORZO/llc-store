@@ -1,3 +1,4 @@
+import { parseBilling } from '@/lib/billing';
 import { parseDomainRegistration } from '@/lib/domains';
 import { checkDomain } from '@/lib/openprovider';
 import { parseRegisteredAgent } from '@/lib/registered-agent';
@@ -17,6 +18,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
   }
   const { entity, state, designator, ownership, sCorpEligible } = body;
+  const billing = parseBilling(body.billing);
+  if (!billing) return NextResponse.json({ error: 'Valid billing name and address are required' }, { status: 400 });
   const businessMail = body.businessMail === undefined ? undefined : parseBusinessMail(body.businessMail);
   if (businessMail === null || (businessMail && !body.contact)) return NextResponse.json({ error: 'Invalid business mail details' }, { status: 400 });
   const contact = body.contact === undefined ? undefined : parseContact(body.contact);
@@ -59,11 +62,12 @@ export async function POST(request: Request) {
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
     return NextResponse.json({ error: 'Order service unavailable. Contact support@justmyllc.com.' }, { status: 503 });
   }
-  const requestHash = tokenHash(JSON.stringify([customerName, customerEmail, phone, llcName, designator, entity, state, ownership, sCorpEligible, total, ...(body.webService !== undefined ? [body.webService] : []), ...(domain ? [domain] : []), ...(body.einRequested !== undefined ? [ein] : []), ...(body.plan !== undefined ? [plan] : []), ...(body.premiumPackage !== undefined ? [premiumPackage] : []), ...(contact ? [contact] : []), ...(businessMail ? [businessMail] : []), ...(members ? [members] : []), ...(registeredAgent ? [registeredAgent] : []), ...(body.orderUpdatesConsent !== undefined ? [orderUpdatesConsent] : [])]));
+  const requestHash = tokenHash(JSON.stringify([billing, customerName, customerEmail, phone, llcName, designator, entity, state, ownership, sCorpEligible, total, ...(body.webService !== undefined ? [body.webService] : []), ...(domain ? [domain] : []), ...(body.einRequested !== undefined ? [ein] : []), ...(body.plan !== undefined ? [plan] : []), ...(body.premiumPackage !== undefined ? [premiumPackage] : []), ...(contact ? [contact] : []), ...(businessMail ? [businessMail] : []), ...(members ? [members] : []), ...(registeredAgent ? [registeredAgent] : []), ...(body.orderUpdatesConsent !== undefined ? [orderUpdatesConsent] : [])]));
   try {
     const { data: order, error } = await supabaseAdmin.from('orders').insert({
       ...(contact ? { contact_details: { ...contact, ...(body.webService !== undefined ? {webService:body.webService,webServiceFeeUsd:body.webService ? 70 : 0} : {}), ...(body.einRequested !== undefined ? { ein } : {}), ...(registeredAgent ? { registeredAgent } : {}), ...(members ? { members } : {}), ...(businessMail ? { businessMail } : {}), ...(body.orderUpdatesConsent !== undefined ? { orderUpdatesConsent, orderUpdatesConsentAt: orderUpdatesConsent ? new Date().toISOString() : null, orderUpdatesConsentVersion: '2026-09-26' } : {}) } } : {}),
       ...(domain ? {domain_registration: domain, domain_fee_usd: domainPrice, domain_status: 'pending_payment'} : {}),
+      billing_details: billing, payment_provider: 'stripe',
       customer_name: customerName, customer_email: customerEmail, customer_phone: phone,
       llc_name: llcName, designator, entity_type: entity, formation_state: state,
       ownership: entity === 'LLC' ? ownership : null, s_corp_eligible: entity === 'S-Corp',

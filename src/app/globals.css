@@ -1127,3 +1127,15 @@ html { scroll-padding-top: 100px; }
 .review-field dd, .review-section > p { font-size: 16px; line-height: 1.6; color: var(--ink-3); margin: 0; overflow-wrap: anywhere; }
 .review-section .review-owner + .review-owner { border-top: 1px solid var(--line); padding-top: 24px; margin-top: 24px; }
 @media(max-width: 600px) { .review-section { padding: 18px; }.review-section dl { grid-template-columns: minmax(0, 1fr); gap: 20px; }.review-section h2 { font-size: 19px; }.review-company { font-size: 21px; }.checkout-review { gap: 18px; } }
+
+.billing-information { margin: 36px 0; padding: 28px; border: 1px solid var(--line); border-radius: 18px; }
+.billing-information h2 { font-size: 25px; margin-bottom: 24px; }.billing-information h3 { font-size: 20px; margin: 30px 0 18px; }
+.billing-method { display: flex; align-items: center; gap: 14px; border: 1px solid var(--accent); border-radius: 12px; padding: 22px; }.billing-method > span:first-child { color: var(--accent); }.billing-stripe { margin-left: auto; font-size: 22px; font-weight: 700; color: #635bff; }
+.billing-shortcuts { display: grid; gap: 12px; margin-bottom: 22px; }.billing-reuse { display: grid; gap: 6px; text-align: left; width: 100%; padding: 18px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg-elev); color: var(--ink); font: inherit; cursor: pointer; overflow-wrap: anywhere; }.billing-reuse span { color: var(--ink-3); font-size: 13px; }.billing-reuse strong { font-size: 15px; }.billing-reuse[aria-pressed="true"] { border-color: var(--accent); background: #f0faff; }.billing-reuse:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.billing-notice { margin-top: 24px; padding: 18px; border: 1px solid #b8e8ff; background: #f0faff; border-radius: 12px; color: #155570; font-size: 14px; line-height: 1.6; }
+@media(max-width: 600px) { .billing-information { padding: 18px; }.billing-information h2 { font-size: 22px; }.billing-method { padding: 16px; flex-wrap: wrap; } }
+@media(max-width: 600px) {
+  .setup-progress { min-width: 0; max-width: 100%; }
+  .setup-progress ol { overflow-x: auto; }
+  .setup-actions .btn { white-space: normal; max-width: 100%; overflow-wrap: anywhere; text-align: center; }
+}

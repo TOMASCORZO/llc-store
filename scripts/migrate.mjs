@@ -19,8 +19,8 @@ try {
   await client.query('CREATE TABLE IF NOT EXISTS public.app_migrations (name TEXT PRIMARY KEY, applied_at TIMESTAMPTZ NOT NULL DEFAULT now())');
   const { rows } = await client.query("SELECT to_regclass('public.orders') AS table_name");
   const files = rows[0].table_name
-    ? ['migrations/20260919_formation_catalog.sql', 'migrations/20260920_direct_checkout.sql', 'migrations/20260926_contact_details.sql', 'migrations/20260927_plan_packages.sql', 'migrations/20260928_domains.sql']
-    : ['supabase-schema.sql', 'migrations/20260919_formation_catalog.sql', 'migrations/20260920_direct_checkout.sql', 'migrations/20260926_contact_details.sql', 'migrations/20260927_plan_packages.sql', 'migrations/20260928_domains.sql'];
+    ? ['migrations/20260919_formation_catalog.sql', 'migrations/20260920_direct_checkout.sql', 'migrations/20260926_contact_details.sql', 'migrations/20260927_plan_packages.sql', 'migrations/20260928_domains.sql', 'migrations/20260930_stripe_billing.sql']
+    : ['supabase-schema.sql', 'migrations/20260919_formation_catalog.sql', 'migrations/20260920_direct_checkout.sql', 'migrations/20260926_contact_details.sql', 'migrations/20260927_plan_packages.sql', 'migrations/20260928_domains.sql', 'migrations/20260930_stripe_billing.sql'];
   for (const file of files) {
     const { rowCount } = await client.query('SELECT name FROM public.app_migrations WHERE name=$1', [file]);
     if (rowCount) continue;
@@ -37,8 +37,8 @@ try {
     }
   }
   await client.query("NOTIFY pgrst, 'reload schema'");
-  const { rows: checks } = await client.query("SELECT column_name FROM information_schema.columns WHERE table_schema='public' AND table_name='orders' AND column_name IN ('access_token_hash','request_hash','checkout_id','payment_id','terms_accepted_at')");
-  if (checks.length !== 5) throw new Error('Order schema verification failed.');
+  const { rows: checks } = await client.query("SELECT column_name FROM information_schema.columns WHERE table_schema='public' AND table_name='orders' AND column_name IN ('access_token_hash','request_hash','checkout_id','payment_id','terms_accepted_at','billing_details','payment_provider','payment_total_cents','payment_tax_cents','payment_fee_cents','payment_billing_details')");
+  if (checks.length !== 11) throw new Error('Order schema verification failed.');
   console.log('Order schema verified.');
 } catch (error) {
   // Avoid logging connection strings, credentials or row contents.

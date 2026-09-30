@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 import crypto from 'node:crypto';
 import ts from 'typescript';
+import Stripe from 'stripe';
 const prices = JSON.parse(fs.readFileSync('src/lib/formation-prices.json', 'utf8'));
 function load(path, imports, env = {}, globals = {}) {
   const context = { exports: {}, require: name => imports[name], process: { env }, Intl, Buffer, URL, AbortSignal, ...globals };
@@ -16,7 +17,8 @@ const contactModule = load('src/lib/contact.ts', {});
 const businessMailModule = load('src/lib/business-mail.ts', { './contact': contactModule });
 const membersModule = load('src/lib/members.ts', { './contact': contactModule });
 const agentModule = load('src/lib/registered-agent.ts', { './business-mail': businessMailModule });
-const payments = load('src/lib/payments.ts', { 'node:crypto': crypto });
+const billingModule = load('src/lib/billing.ts', { './contact': contactModule });
+const payments = load('src/lib/payments.ts', { 'node:crypto': crypto, stripe: Stripe, './billing': billingModule });
 const catalog = load('src/lib/formation.ts', { './formation-prices.json': prices });
 import { NextResponse } from 'next/server.js';
 const env = { NEXT_PUBLIC_SUPABASE_URL: 'test', SUPABASE_SERVICE_ROLE_KEY: 'test' };
@@ -26,10 +28,11 @@ function api(config = env) {
     inserted = data;
     return { select: () => ({ single: async () => ({ data: { id: 'test-order', status: data.status } }) }) };
   } }) };
-  const route = load('src/app/api/orders/route.ts', { 'next/server': { NextResponse }, '@/lib/domains': domainModule, '@/lib/openprovider': domainProvider, '@/lib/register-domain': {registerPaidDomain: async () => {}}, '@/lib/contact': contactModule, '@/lib/business-mail': businessMailModule, '@/lib/members': membersModule, '@/lib/registered-agent': agentModule, '@/lib/payments': payments, '@/lib/formation': catalog, '@/lib/supabase': { supabaseAdmin } }, config);
+  const route = load('src/app/api/orders/route.ts', { 'next/server': { NextResponse }, '@/lib/domains': domainModule, '@/lib/openprovider': domainProvider, '@/lib/register-domain': {registerPaidDomain: async () => {}}, '@/lib/billing': billingModule, '@/lib/contact': contactModule, '@/lib/business-mail': businessMailModule, '@/lib/members': membersModule, '@/lib/registered-agent': agentModule, '@/lib/payments': payments, '@/lib/formation': catalog, '@/lib/supabase': { supabaseAdmin } }, config);
   return { post: body => route.POST(new Request('http://localhost/api/orders', { method: 'POST', body: JSON.stringify(body) })), inserted: () => inserted };
 }
-const valid = { orderToken: 'a'.repeat(64), acceptTerms: true, customerName: 'Test User', customerEmail: 'test@example.com', llcName: 'Test Company', entity: 'LLC', state: 'New Mexico', designator: 'LLC', ownership: 'single', locale: 'es' };
+const billingDetails = { name: 'Test User', address: { country: 'US', street: '123 Example Street', addressLine2: '', city: 'Albuquerque', region: 'NM', postalCode: '87101' } };
+const valid = { billing: billingDetails, orderToken: 'a'.repeat(64), acceptTerms: true, customerName: 'Test User', customerEmail: 'test@example.com', llcName: 'Test Company', entity: 'LLC', state: 'New Mexico', designator: 'LLC', ownership: 'single', locale: 'es' };
 
 test('101 available formations: every total adds exactly $50 to base formation and state fee', () => {
   assert.equal(prices.length, 102);
@@ -76,43 +79,49 @@ test('missing database credentials never returns a fake saved request', async ()
   assert.equal(route.inserted(), undefined);
 });
 
-test('webhook signature rejects altered payloads, wrong secrets and invalid signatures', () => {
-  const raw = JSON.stringify({ eventType: 'checkout.completed' });
-  const signature = crypto.createHmac('sha256', 'secret').update(raw).digest('hex');
+const sign = (raw, timestamp = Math.floor(Date.now() / 1000)) => Stripe.webhooks.generateTestHeaderString({ payload: raw, secret: 'secret', timestamp });
+test('Stripe signature rejects tampering, wrong secrets, missing headers and old replays', () => {
+  const raw = JSON.stringify({ type: 'checkout.session.completed' });
+  const signature = sign(raw);
   assert.equal(payments.verifySignature(raw, signature, 'secret'), true);
   assert.equal(payments.verifySignature(raw + ' ', signature, 'secret'), false);
   assert.equal(payments.verifySignature(raw, signature, 'wrong'), false);
   assert.equal(payments.verifySignature(raw, null, 'secret'), false);
   assert.equal(payments.verifySignature(raw, 'invalid', 'secret'), false);
+  assert.equal(payments.verifySignature(raw, sign(raw, Math.floor(Date.now() / 1000) - 600), 'secret'), false);
 });
-test('webhook only marks matching, signed, paid orders as paid; replay is harmless', async () => {
-  const config = { CREEM_WEBHOOK_SECRET: 'secret', CREEM_PRODUCT_ID: 'prod_test' };
-  const stored = { id: 'order_test', status: 'pending_payment', checkout_id: 'ch_test', amount_usd: 102, payment_id: null };
+test('Stripe webhook matches session, subtotal and tax; replay never repeats payment', async () => {
+  const config = { STRIPE_WEBHOOK_SECRET: 'secret', STRIPE_SECRET_KEY: 'sk_test_example' };
+  const stored = { id: 'order_test', payment_provider: 'stripe', status: 'pending_payment', checkout_id: 'cs_test', amount_usd: 102, payment_id: null };
   let updates = 0;
   const db = { from: () => ({
     select: () => ({ eq: () => ({ single: async () => ({ data: stored }) }) }),
     update: values => ({ eq: () => ({ eq: async () => { Object.assign(stored, values); updates++; return {}; } }) }),
   }) };
-  const route = load('src/app/api/webhook/route.ts', { 'next/server': { NextResponse }, '@/lib/domains': domainModule, '@/lib/openprovider': domainProvider, '@/lib/register-domain': {registerPaidDomain: async () => {}}, '@/lib/contact': contactModule, '@/lib/business-mail': businessMailModule, '@/lib/members': membersModule, '@/lib/registered-agent': agentModule, '@/lib/payments': payments, '@/lib/supabase': { supabaseAdmin: db } }, config);
-  const event = { eventType: 'checkout.completed', object: { id: 'ch_test', status: 'completed', metadata: { order_id: 'order_test' }, order: { id: 'pay_test', status: 'paid', product: 'prod_test', currency: 'USD', amount: 10200 } } };
+  const route = load('src/app/api/webhook/route.ts', { 'next/server': { NextResponse }, '@/lib/register-domain': { registerPaidDomain: async () => {} }, '@/lib/payments': payments, '@/lib/supabase': { supabaseAdmin: db } }, config);
+  const session = { id: 'cs_test', mode: 'payment', status: 'complete', payment_status: 'paid', client_reference_id: 'order_test', metadata: { order_id: 'order_test' }, payment_intent: 'pi_test', currency: 'usd', amount_subtotal: 10200, amount_total: 10965, total_details: { amount_tax: 765, amount_discount: 0, amount_shipping: 0 }, automatic_tax: { enabled: true, status: 'complete' } };
+  const event = { type: 'checkout.session.completed', livemode: false, data: { object: session } };
   async function post(body, signed = true) {
     const raw = JSON.stringify(body);
-    return route.POST(new Request('http://localhost/api/webhook', { method: 'POST', body: raw, headers: signed ? { 'creem-signature': crypto.createHmac('sha256', 'secret').update(raw).digest('hex') } : {} }));
+    return route.POST(new Request('http://localhost/api/webhook', { method: 'POST', body: raw, headers: signed ? { 'stripe-signature': sign(raw) } : {} }));
   }
   assert.equal((await post(event, false)).status, 401);
-  for (const change of [{ amount: 1 }, { currency: 'EUR' }, { status: 'pending' }, { product: 'other' }]) {
-    assert.equal((await post({ ...event, object: { ...event.object, order: { ...event.object.order, ...change } } })).status, 400);
+  for (const change of [{ amount_subtotal: 1 }, { currency: 'eur' }, { payment_status: 'unpaid' }, { id: 'cs_other' }, { client_reference_id: 'other' }, { amount_total: 10200 }, { total_details: { amount_tax: -1 } }, { automatic_tax: { enabled: true, status: 'failed' } }]) {
+    assert.equal((await post({ ...event, data: { object: { ...session, ...change } } })).status, 400);
   }
+  assert.equal((await post({ ...event, livemode: true })).status, 400);
   assert.equal(updates, 0);
   assert.equal((await post(event)).status, 200);
   assert.equal(stored.status, 'paid');
+  assert.equal(stored.payment_total_cents, 10965);
+  assert.equal(stored.payment_tax_cents, 765);
   assert.equal((await post(event)).status, 200);
   assert.equal(updates, 1);
 });
 
 test('payment retries reuse a stored session and concurrent attempts cannot create a second one', async () => {
   let starts = 0;
-  const stored = { id: 'order', status: 'pending_payment', amount_usd: 102, customer_email: 'test@example.com', checkout_url: null };
+  const stored = { payment_provider: 'stripe', billing_details: billingDetails, id: 'order', status: 'pending_payment', amount_usd: 102, customer_email: 'test@example.com', checkout_url: null };
   let claimed = false;
   const db = { from: () => ({
     select: () => ({ eq: () => ({ single: async () => ({ data: { ...stored } }) }) }),
@@ -125,18 +134,24 @@ test('payment retries reuse a stored session and concurrent attempts cannot crea
       } }) }) }) };
     } }),
   }) };
-  const route = load('src/app/api/orders/payment/route.ts', { 'next/server': { NextResponse }, '@/lib/domains': domainModule, '@/lib/openprovider': domainProvider, '@/lib/register-domain': {registerPaidDomain: async () => {}}, '@/lib/supabase': { supabaseAdmin: db }, '@/lib/payments': { ...payments, paymentsConfigured: () => true, createPayment: async () => { starts++; return { id: 'ch_test', url: 'https://www.creem.io/payment/test' }; } } });
+  const route = load('src/app/api/orders/payment/route.ts', { 'next/server': { NextResponse }, '@/lib/domains': domainModule, '@/lib/openprovider': domainProvider, '@/lib/register-domain': {registerPaidDomain: async () => {}}, '@/lib/supabase': { supabaseAdmin: db }, '@/lib/payments': { ...payments, paymentsConfigured: () => true, createPayment: async () => { starts++; return { id: 'cs_test', url: 'https://checkout.stripe.com/c/pay/test' }; } } });
   const request = () => new Request('http://localhost/api/orders/payment', { method: 'POST', headers: { Authorization: `Bearer ${'a'.repeat(64)}` } });
   const results = await Promise.all([route.POST(request()), route.POST(request())]);
   assert.deepEqual(results.map(r => r.status).sort(), [200, 409]);
   assert.equal(starts, 1);
   assert.equal((await route.POST(request())).status, 200);
   assert.equal(starts, 1);
+  stored.checkout_url = 'https://example.com/foreign-session';
+  assert.equal((await route.POST(request())).status, 409);
+  stored.checkout_url = 'https://checkout.stripe.com/c/pay/test';
+  stored.payment_provider = null;
+  assert.equal((await route.POST(request())).status, 409);
+  stored.payment_provider = 'stripe';
   stored.status = 'paid';
   assert.equal((await route.POST(request())).status, 409);
 });
 test('payment endpoint fails closed without configuration or access token', async () => {
-  const route = load('src/app/api/orders/payment/route.ts', { 'next/server': { NextResponse }, '@/lib/domains': domainModule, '@/lib/openprovider': domainProvider, '@/lib/register-domain': {registerPaidDomain: async () => {}}, '@/lib/supabase': {}, '@/lib/contact': contactModule, '@/lib/business-mail': businessMailModule, '@/lib/members': membersModule, '@/lib/registered-agent': agentModule, '@/lib/payments': payments });
+  const route = load('src/app/api/orders/payment/route.ts', { 'next/server': { NextResponse }, '@/lib/domains': domainModule, '@/lib/openprovider': domainProvider, '@/lib/register-domain': {registerPaidDomain: async () => {}}, '@/lib/supabase': {}, '@/lib/billing': billingModule, '@/lib/contact': contactModule, '@/lib/business-mail': businessMailModule, '@/lib/members': membersModule, '@/lib/registered-agent': agentModule, '@/lib/payments': payments });
   assert.equal((await route.POST(new Request('http://localhost', { method: 'POST' }))).status, 401);
   assert.equal((await route.POST(new Request('http://localhost', { method: 'POST', headers: { Authorization: `Bearer ${'a'.repeat(64)}` } }))).status, 503);
 });
@@ -152,7 +167,7 @@ test('order retry returns the original reference and rejects changed details', a
     } }) }),
     select: () => ({ eq: () => ({ single: async () => ({ data: stored }) }) }),
   }) };
-  const route = load('src/app/api/orders/route.ts', { 'next/server': { NextResponse }, '@/lib/domains': domainModule, '@/lib/openprovider': domainProvider, '@/lib/register-domain': {registerPaidDomain: async () => {}}, '@/lib/supabase': { supabaseAdmin: db }, '@/lib/formation': catalog, '@/lib/contact': contactModule, '@/lib/business-mail': businessMailModule, '@/lib/members': membersModule, '@/lib/registered-agent': agentModule, '@/lib/payments': payments }, env);
+  const route = load('src/app/api/orders/route.ts', { 'next/server': { NextResponse }, '@/lib/domains': domainModule, '@/lib/openprovider': domainProvider, '@/lib/register-domain': {registerPaidDomain: async () => {}}, '@/lib/supabase': { supabaseAdmin: db }, '@/lib/formation': catalog, '@/lib/billing': billingModule, '@/lib/contact': contactModule, '@/lib/business-mail': businessMailModule, '@/lib/members': membersModule, '@/lib/registered-agent': agentModule, '@/lib/payments': payments }, env);
   const request = body => new Request('http://localhost/api/orders', { method: 'POST', body: JSON.stringify(body) });
   assert.equal((await route.POST(request(valid))).status, 201);
   const retry = await route.POST(request(valid));
@@ -160,21 +175,44 @@ test('order retry returns the original reference and rejects changed details', a
   assert.equal((await retry.json()).orderId, 'saved_order');
   assert.equal((await route.POST(request({ ...valid, state: 'Florida' }))).status, 409);
 });
-test('provider checkout uses exact server amount in cents and a fixed return origin', async () => {
-  let sent;
-  const gateway = load('src/lib/payments.ts', { 'node:crypto': crypto }, {
-    CREEM_API_KEY: 'test_key', CREEM_PRODUCT_ID: 'prod_test', CREEM_WEBHOOK_SECRET: 'secret', APP_URL: 'https://www.justmyllc.com', CREEM_TEST_MODE: 'true',
-  }, { fetch: async (url, options) => {
-    sent = { url, body: JSON.parse(options.body) };
-    return { ok: true, json: async () => ({ id: 'ch_test', checkout_url: 'https://www.creem.io/test/payment/ch_test' }) };
-  } });
-  await gateway.createPayment({ id: 'internal_order', amount_usd: 102, customer_email: 'test@example.com' });
-  assert.equal(sent.url, 'https://test-api.creem.io/v1/checkouts');
-  assert.equal(sent.body.custom_price, 10200);
-  assert.equal(sent.body.units, 1);
-  assert.equal(sent.body.request_id, 'internal_order');
-  assert.equal(sent.body.metadata.order_id, 'internal_order');
-  assert.equal(sent.body.success_url, 'https://www.justmyllc.com/checkout/confirmation?order=internal_order');
+test('Stripe uses server prices, exclusive tax, billing prefill and idempotency keys', async () => {
+  const calls = [];
+  class StripeStub {
+    customers = { create: async (body, options) => { calls.push({ kind: 'customer', body, options }); return { id: 'cus_test' }; } };
+    checkout = { sessions: { create: async (body, options) => { calls.push({ kind: 'session', body, options }); return { id: 'cs_test', url: 'https://checkout.stripe.com/c/pay/cs_test' }; } } };
+  }
+  const config = { STRIPE_SECRET_KEY: 'sk_test_example', STRIPE_WEBHOOK_SECRET: 'secret', STRIPE_TAX_READY: 'true', STRIPE_FORMATION_TAX_CODE: 'txcd_10000000', STRIPE_STATE_FEE_TAX_CODE: 'txcd_10000000', APP_URL: 'https://www.justmyllc.com' };
+  const gateway = load('src/lib/payments.ts', { 'node:crypto': crypto, stripe: StripeStub, './billing': billingModule }, config);
+  await gateway.createPayment({ id: 'internal_order', amount_usd: 102, state_fee_usd: 52, customer_email: 'test@example.com', billing_details: billingDetails });
+  assert.equal(calls[0].body.name, billingDetails.name);
+  assert.equal(calls[0].body.address.country, 'US');
+  const { body, options } = calls[1];
+  assert.equal(body.line_items.reduce((sum, item) => sum + item.price_data.unit_amount, 0), 10200);
+  assert.equal(body.line_items.length, 2);
+  assert.ok(body.line_items.every(item => item.price_data.tax_behavior === 'exclusive'));
+  assert.equal(body.automatic_tax.enabled, true);
+  assert.equal(body.billing_address_collection, 'required');
+  assert.equal(body.customer, 'cus_test');
+  assert.equal(body.client_reference_id, 'internal_order');
+  assert.equal(body.success_url, 'https://www.justmyllc.com/checkout/confirmation?order=internal_order');
+  assert.equal(body.cancel_url, body.success_url + '&payment=canceled');
+  assert.equal(options.idempotencyKey, 'order:internal_order:checkout:v1');
+  assert.equal(payments.paymentsConfigured(), false);
+  await assert.rejects(() => gateway.createPayment({ id: 'bad', amount_usd: 102, customer_email: 'test@example.com' }));
+  delete config.STRIPE_STATE_FEE_TAX_CODE;
+  await assert.rejects(() => gateway.createPayment({ id: 'bad-tax', amount_usd: 102, state_fee_usd: 52, customer_email: 'test@example.com', billing_details: billingDetails }));
+  assert.equal(calls.length, 2);
+});
+test('billing validation rejects invalid data and ignores untrusted extras', async () => {
+  for (const billing of [null, { ...billingDetails, name: ' ' }, { ...billingDetails, address: { ...billingDetails.address, postalCode: 'bad' } }, { ...billingDetails, address: { ...billingDetails.address, country: 'ZZ' } }]) {
+    assert.equal((await api().post({ ...valid, billing })).status, 400);
+  }
+  const route = api();
+  assert.equal((await route.post({ ...valid, billing: { ...billingDetails, cardNumber: 'not-stored', address: { ...billingDetails.address, private: true } } })).status, 201);
+  assert.equal(route.inserted().billing_details.name, 'Test User');
+  assert.equal(route.inserted().billing_details.cardNumber, undefined);
+  assert.equal(route.inserted().billing_details.address.private, undefined);
+  assert.equal(route.inserted().payment_provider, 'stripe');
 });
 
 const contactDetails = { firstName: 'Example', lastName: 'Customer', country: 'AR', street: 'Example Street 123', addressLine2: '', city: 'Example City', region: '', postalCode: '' };
@@ -327,10 +365,10 @@ test('paid domain registration claims once and quarantines uncertain results', a
   const db={from:()=>({update:patch=>{
    const chain={eq:()=>chain,select:()=>chain,maybeSingle:async()=>{if(claimed)return {data:null};claimed=true;return {data:order};},then:resolve=>{if(patch.domain_status)status=patch.domain_status;return Promise.resolve(resolve({error:null}));}};return chain;
   }})};
-  const module=load('src/lib/register-domain.ts',{'./supabase':{supabaseAdmin:db},'./openprovider':{checkDomain:async()=>({available:true,premium:false,price:17.98}),providerRequest:async path=>{calls++;if(path==='customers')return {handle:'TEST-HANDLE'};if(fail)throw new Error('Timeout');return {id:123,status:'ACT'};}}});
-  await module.registerPaidDomain(order.id);
+  const domainRegistrationModule=load('src/lib/register-domain.ts',{'./supabase':{supabaseAdmin:db},'./openprovider':{checkDomain:async()=>({available:true,premium:false,price:17.98}),providerRequest:async path=>{calls++;if(path==='customers')return {handle:'TEST-HANDLE'};if(fail)throw new Error('Timeout');return {id:123,status:'ACT'};}}});
+  await domainRegistrationModule.registerPaidDomain(order.id);
   assert.equal(status,fail?'needs_review':'registered');
-  await module.registerPaidDomain(order.id);
+  await domainRegistrationModule.registerPaidDomain(order.id);
   assert.equal(calls,2);
  }
 });

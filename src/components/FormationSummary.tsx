@@ -16,7 +16,8 @@ export default function FormationSummary({ state, entity, plan = 'standard', pre
     {einServiceFee(plan, premiumPackage, einRequested) > 0 && <div className="summary-item"><span>EIN / Tax ID</span><span>{formatUsd(einServiceFee(plan, premiumPackage, einRequested))}</span></div>}
     {domainName && <div className="summary-item"><span>{domainName} · {lang === 'es' ? '1 año' : '1 year'}</span><span>{formatUsd(domainPrice)}</span></div>}
     {webService && <div className="summary-item"><span>{lang === 'es' ? 'Servicio web · pago único' : 'Website service · one-time'}</span><span>$70.00</span></div>}
-    <div className="summary-total"><span>{t('catalog.total')}</span><strong>{formatUsd(quote.total + (premiumPackage ? PREMIUM_PACKAGE_USD : 0) + einServiceFee(plan, premiumPackage, einRequested) + (domainName ? domainPrice : 0) + (webService ? 70 : 0))}</strong></div>
+    <div className="summary-total"><span>{lang === 'es' ? 'Subtotal' : 'Subtotal'}</span><strong>{formatUsd(quote.total + (premiumPackage ? PREMIUM_PACKAGE_USD : 0) + einServiceFee(plan, premiumPackage, einRequested) + (domainName ? domainPrice : 0) + (webService ? 70 : 0))}</strong></div>
+    <p className="formation-note">{lang === 'es' ? 'Los impuestos aplicables se calculan en Stripe antes de pagar.' : 'Applicable taxes are calculated in Stripe before payment.'}</p>
     <p className="formation-note">{t('catalog.feeNote')}</p>
   </div>;
 }

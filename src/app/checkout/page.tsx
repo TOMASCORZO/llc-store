@@ -4,6 +4,8 @@ import { Suspense, useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useLanguage } from '@/i18n/LanguageContext';
+import BillingInformation from '@/components/BillingInformation';
+import { type BillingDetails } from '@/lib/billing';
 import CheckoutReview from '@/components/CheckoutReview';
 import OrderUpdatesConsent from '@/components/OrderUpdatesConsent';
 import { SavedContact, readSavedContact, rememberRegisteredContact, forgetSavedContact } from '@/lib/saved-contact';
@@ -73,6 +75,9 @@ function FormationCheckout() {
   const [entity, setEntity] = useState<EntityType>(initialEntity);
   const [state, setState] = useState(getFormationQuote(initialState, initialEntity) ? initialState : DEFAULT_STATE);
   const [contact, setContact] = useState<ContactDetails>({ firstName: '', lastName: '', country: '', street: '', addressLine2: '', city: '', region: '', postalCode: '' });
+  const [billing, setBilling] = useState<BillingDetails | null>(null);
+  const { firstName: billingFirstName, lastName: billingLastName, ...contactAddress } = contact;
+  const resolvedBilling = billing || { name: `${billingFirstName} ${billingLastName}`.trim(), address: contactAddress };
   const [mailChoice, setMailChoice] = useState<'own' | 'virtual'>('own');
   const [differentAddress, setDifferentAddress] = useState(false);
   const [businessAddress, setBusinessAddress] = useState<BusinessAddress>(EMPTY_BUSINESS_ADDRESS);
@@ -127,7 +132,7 @@ function FormationCheckout() {
       }
       const response = await fetch('/api/orders', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderToken: orderToken.current, acceptTerms, ...formData, customerName: `${contact.firstName.trim()} ${contact.lastName.trim()}`, contact, businessMail, members: resolvedMembers, registeredAgent: resolvedAgent, webService, domainRegistration, einRequested: einRequested === true, plan, premiumPackage, orderUpdatesConsent, entity, state, sCorpEligible: eligible, ownership: entity === 'LLC' ? ownership : null, locale: lang }),
+        body: JSON.stringify({ orderToken: orderToken.current, acceptTerms, billing: resolvedBilling, ...formData, customerName: `${contact.firstName.trim()} ${contact.lastName.trim()}`, contact, businessMail, members: resolvedMembers, registeredAgent: resolvedAgent, webService, domainRegistration, einRequested: einRequested === true, plan, premiumPackage, orderUpdatesConsent, entity, state, sCorpEligible: eligible, ownership: entity === 'LLC' ? ownership : null, locale: lang }),
       });
       const data = await response.json();
       if (!response.ok || typeof data.orderId !== 'string') throw new Error('Request failed');
@@ -225,7 +230,7 @@ function FormationCheckout() {
           {step === 9 && <WebServiceStep companyName={formData.llcName} />}
           {step === 10 && <>
           <CheckoutReview es={lang === 'es'} companyName={`${formData.llcName} ${formData.designator}`} entity={entity} state={state} plan={plan} contact={contact} email={formData.customerEmail} phone={formData.customerPhone} updates={orderUpdatesConsent} eligible={eligible} businessMail={businessMail} members={resolvedMembers} agent={resolvedAgent} premium={premiumPackage} ein={einRequested === true} domain={domainRegistration} web={webService} onEdit={editReview} />
-          <p className="formation-note">{t('catalog.paymentNote')}</p>
+          <BillingInformation es={lang === 'es'} value={resolvedBilling} onChange={value => { setBilling(value); setAcceptTerms(false); }} contactName={`${contact.firstName} ${contact.lastName}`} companyName={`${formData.llcName} ${formData.designator}`} contactAddress={contactAddress} businessAddress={businessMail?.choice === 'own' ? businessMail.address : undefined} />
           <p className="formation-note">{t('catalog.policyNotice')}</p>
           <label className="formation-checkbox">
             <input type="checkbox" required checked={acceptTerms} onChange={e => setAcceptTerms(e.target.checked)} />
@@ -236,7 +241,7 @@ function FormationCheckout() {
           <div className="setup-actions premium-actions">
             {step === 0 && !editingReview ? <Link href={`/product?entity=${encodeURIComponent(entity)}&state=${encodeURIComponent(state)}&plan=${plan}`} className="btn btn-outline">← {copy.back}</Link> : <button type="button" className="btn btn-outline" disabled={step === 0} onClick={() => { setError(false); setStep(Math.max(0, step === 8 && skipEin ? 6 : step - 1)); }}>← {copy.back}</button>}
             {step === 9 ? <><button type="button" className="btn btn-outline" onClick={()=>{setWebService(false);finishSelection(10);}}>{lang === 'es' ? 'No, gracias' : 'No thanks'}</button><button type="button" className="btn btn-accent btn-xl" onClick={()=>{setWebService(true);finishSelection(10);}}>{lang === 'es' ? 'Agregar mi web · $70 →' : 'Add my website · $70 →'}</button></> : step === 4 ? <><button type="button" className="btn btn-outline" onClick={()=>{setPremiumPackage(false);finishSelection(5);}}>{lang === 'es' ? 'No, gracias' : 'No thanks'}</button><button type="button" className="btn btn-accent btn-xl" onClick={()=>{setPremiumPackage(true);finishSelection(5);}}>{lang === 'es' ? 'Agregar paquete · $99 →' : 'Add package · $99 →'}</button></> : <button type="submit" className="btn btn-accent btn-xl" disabled={isLoading || (step === 10 && (!acceptTerms || (entity === 'S-Corp' && !eligible)))}>
-              {step < 10 ? `${editingReview ? (lang === 'es' ? 'Guardar y revisar' : 'Save and review') : copy.next} →` : isLoading ? t('catalog.sending') : `${t('catalog.submit')} · ${formatUsd(getFormationQuote(state, entity, plan)!.total + (premiumPackage ? PREMIUM_PACKAGE_USD : 0) + einServiceFee(plan, premiumPackage, einRequested === true) + (domainRegistration?.price || 0) + (webService ? 70 : 0))}`}
+              {step < 10 ? `${editingReview ? (lang === 'es' ? 'Guardar y revisar' : 'Save and review') : copy.next} →` : isLoading ? t('catalog.sending') : `${lang === 'es' ? 'Continuar a Stripe' : 'Continue to Stripe'} · ${formatUsd(getFormationQuote(state, entity, plan)!.total + (premiumPackage ? PREMIUM_PACKAGE_USD : 0) + einServiceFee(plan, premiumPackage, einRequested === true) + (domainRegistration?.price || 0) + (webService ? 70 : 0))} ${lang === 'es' ? '+ impuestos aplicables' : '+ applicable taxes'}`}
             </button>}
           </div>
         </fieldset>
