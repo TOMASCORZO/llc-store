@@ -1,6 +1,7 @@
 'use client';
 
 import { Suspense, useEffect, useState } from 'react';
+import EmbeddedPayment from '@/components/EmbeddedPayment';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import TopNav from '@/components/TopNav';
@@ -16,6 +17,8 @@ function OrderStatus() {
   const [loading, setLoading] = useState(true);
   const [paymentError, setPaymentError] = useState(params.get('payment') === 'unavailable');
   const [paying, setPaying] = useState(false);
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [refreshVersion, setRefreshVersion] = useState(0);
   async function pay() {
     if (!id) return;
     setPaying(true); setPaymentError(false);
@@ -23,8 +26,11 @@ function OrderStatus() {
       const token = sessionStorage.getItem(`order:${id}`);
       const response = await fetch('/api/orders/payment', { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
       const data = await response.json();
-      if (!response.ok || !data.url) throw new Error('Payment unavailable');
-      window.location.assign(data.url);
+      if (!response.ok) throw new Error('Payment unavailable');
+      if (data.complete) setRefreshVersion(value => value + 1);
+      else if (typeof data.clientSecret === 'string') setClientSecret(data.clientSecret);
+      else throw new Error('Payment unavailable');
+      setPaying(false);
     } catch { setPaymentError(true); setPaying(false); }
   }
   useEffect(() => {
@@ -46,7 +52,7 @@ function OrderStatus() {
     }
     void refresh();
     return () => { stopped = true; clearTimeout(timer); };
-  }, [id]);
+  }, [id, refreshVersion]);
   const paid = order && ['paid', 'processing', 'completed'].includes(order.status);
   return <main className="confirm-page"><div className="card confirm-card" aria-live="polite">
     <h1 className="t-h2">{loading ? t('catalog.loading') : paid ? t('catalog.paid') : order ? t('catalog.received') : t('catalog.request')}</h1>
@@ -56,7 +62,8 @@ function OrderStatus() {
       {order && <p className="formation-note">{paid && order.payment_tax_cents != null ? `${lang === 'es' ? 'Impuestos incluidos' : 'Tax included'}: US$${(order.payment_tax_cents / 100).toFixed(2)}` : (lang === 'es' ? 'Subtotal antes de impuestos. Stripe mostrará el total final antes de pagar.' : 'Subtotal before tax. Stripe will show the final total before payment.')}</p>}
       {params.get('payment') === 'canceled' && !paid && <p className="formation-note">{lang === 'es' ? 'Volviste sin completar el pago. Podés retomarlo con el botón de abajo.' : 'You returned without completing payment. You can resume using the button below.'}</p>}
       {order?.domain_name && <p>{order.domain_name}: {order.domain_status === 'registered' ? (lang === 'es' ? 'Registrado' : 'Registered') : order.domain_status === 'needs_review' ? (lang === 'es' ? 'Requiere revisión. Contactá a soporte con tu referencia de pedido.' : 'Needs review. Contact support with your order reference.') : (lang === 'es' ? 'Registro pendiente de confirmación' : 'Registration awaiting confirmation')}</p>}
-      {order?.status === 'pending_payment' && <button className="btn btn-accent" disabled={paying} onClick={pay}>{paying ? t('catalog.sending') : t('catalog.submit')}</button>}
+      {order?.status === 'pending_payment' && !clientSecret && <button className="btn btn-accent" disabled={paying} onClick={pay}>{paying ? t('catalog.sending') : t('catalog.submit')}</button>}
+      {clientSecret && !paid && <EmbeddedPayment clientSecret={clientSecret} es={lang === 'es'} onComplete={() => { setClientSecret(null); setRefreshVersion(value => value + 1); }} />}
       {paymentError && !paid && <p className="formation-error" role="alert">{t('catalog.paymentUnavailable')}</p>}
       <p className="formation-note">{t('catalog.contact')} <a href="mailto:support@justmyllc.com">support@justmyllc.com</a></p>
       <Link href={order ? '/' : '/checkout'} className="btn btn-outline">{order ? t('catalog.home') : t('catalog.choose')}</Link>

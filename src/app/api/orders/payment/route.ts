@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
-import { createPayment, isStripeCheckoutUrl, paymentsConfigured, tokenHash, validToken } from '@/lib/payments';
+import { createPayment, resumePayment, paymentsConfigured, tokenHash, validToken } from '@/lib/payments';
 
 export async function POST(request: Request) {
   const token = request.headers.get('authorization')?.replace(/^Bearer /, '');
@@ -10,18 +10,22 @@ export async function POST(request: Request) {
   if (error || !order) return NextResponse.json({ error: 'Order unavailable' }, { status: 404 });
   if (order.status !== 'pending_payment') return NextResponse.json({ error: 'Order is not awaiting payment' }, { status: 409 });
   if (order.payment_provider !== 'stripe' || !order.billing_details) return NextResponse.json({ error: 'This order requires billing migration. Contact support.' }, { status: 409 });
-  if (order.checkout_url) {
-    if (!order.checkout_id?.startsWith('cs_') || !isStripeCheckoutUrl(order.checkout_url)) return NextResponse.json({ error: 'Unsupported checkout. Contact support.' }, { status: 409 });
-    return NextResponse.json({ url: order.checkout_url });
+  if (order.checkout_id) {
+    try {
+      const session = await resumePayment(order);
+      return NextResponse.json(session, { headers: { 'Cache-Control': 'no-store' } });
+    } catch {
+      return NextResponse.json({ error: 'This checkout is expired or unavailable. Contact support with your order reference.' }, { status: 409 });
+    }
   }
   // Claim once: an ambiguous provider timeout must not create a second payable session.
   const { data: claimed, error: claimError } = await supabaseAdmin.from('orders').update({ checkout_started_at: new Date().toISOString() }).eq('id', order.id).is('checkout_started_at', null).eq('status', 'pending_payment').select('id').maybeSingle();
   if (claimError || !claimed) return NextResponse.json({ error: 'Payment session is being prepared. Contact support if this persists.' }, { status: 409 });
   try {
     const session = await createPayment(order);
-    const { error: saveError } = await supabaseAdmin.from('orders').update({ checkout_id: session.id, checkout_url: session.url }).eq('id', order.id);
+    const { error: saveError } = await supabaseAdmin.from('orders').update({ checkout_id: session.id, checkout_url: null }).eq('id', order.id);
     if (saveError) throw new Error('Unable to store session');
-    return NextResponse.json({ url: session.url });
+    return NextResponse.json({ clientSecret: session.clientSecret }, { headers: { 'Cache-Control': 'no-store' } });
   } catch {
     return NextResponse.json({ error: 'Payment session could not be confirmed. Contact support with your order reference before trying again.' }, { status: 502 });
   }

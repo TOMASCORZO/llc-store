@@ -17,7 +17,7 @@ export default function BillingInformation({ es, value, onChange, contactName, c
   return <section className="billing-information" aria-labelledby="billing-title">
     <h2 id="billing-title">{text('Billing information', 'Información de facturación')}</h2>
     <div className="billing-method"><span aria-hidden="true">◉</span><strong>{text('Pay by card', 'Pagar con tarjeta')}</strong><span className="billing-stripe">Stripe</span></div>
-    <p className="formation-note">{text('Enter your billing details below. On the next screen, Stripe will securely collect your card details and show the final total, including applicable taxes, before you pay.', 'Completá los datos de facturación. En la siguiente pantalla, Stripe solicitará los datos de tu tarjeta de forma segura y mostrará el total final, incluidos los impuestos aplicables, antes de pagar.')}</p>
+    <p className="formation-note">{text('Enter your billing details below. A secure card form will open on this page and show the final total, including applicable taxes, before you pay.', 'Completá los datos de facturación. El formulario seguro de tarjeta se abrirá en esta página y mostrará el total final, incluidos los impuestos aplicables, antes de pagar.')}</p>
     <h3>{text('Billing name', 'Nombre de facturación')}</h3>
     <div className="billing-shortcuts">
       <button type="button" className="billing-reuse" aria-pressed={value.name === contactName} onClick={() => onChange({ ...value, name: contactName })}><span>{text('Use contact name', 'Usar nombre de contacto')}</span><strong>{contactName}</strong></button>

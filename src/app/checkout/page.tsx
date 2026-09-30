@@ -4,6 +4,7 @@ import { Suspense, useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useLanguage } from '@/i18n/LanguageContext';
+import EmbeddedPayment from '@/components/EmbeddedPayment';
 import BillingInformation from '@/components/BillingInformation';
 import { type BillingDetails } from '@/lib/billing';
 import CheckoutReview from '@/components/CheckoutReview';
@@ -45,6 +46,7 @@ function FormationCheckout() {
   const baseCopy = setupCopy[lang];
   const mailTitle = { en: 'Business mailing address', es: 'Dirección comercial', pt: 'Endereço comercial', fr: 'Adresse professionnelle', de: 'Geschäftsadresse', zh: '公司地址' }[lang];
   const copy = { ...baseCopy, steps: [baseCopy.steps[0], filingCopy[lang].title, baseCopy.steps[1], mailTitle, lang === 'es' ? 'Paquete premium' : 'Premium Service Package', lang === 'es' ? 'Propietarios de la empresa' : 'Company owners', lang === 'es' ? 'Agente registrado' : 'Registered agent', 'EIN / Tax ID', lang === 'es' ? 'Dominio' : 'Domain', lang === 'es' ? 'Servicio web' : 'Website service', baseCopy.steps[2]], remaining: [{ en: '10 steps remaining', es: 'Quedan 10 pasos', pt: 'Faltam 10 etapas', fr: '10 étapes restantes', de: 'Noch 10 Schritte', zh: '还剩10步' }[lang], { en: '9 steps remaining', es: 'Quedan 9 pasos', pt: 'Faltam 9 etapas', fr: '9 étapes restantes', de: 'Noch 9 Schritte', zh: '还剩9步' }[lang], { en: '8 steps remaining', es: 'Quedan 8 pasos', pt: 'Faltam 8 etapas', fr: '8 étapes restantes', de: 'Noch 8 Schritte', zh: '还剩8步' }[lang], { en: '7 steps remaining', es: 'Quedan 7 pasos', pt: 'Faltam 7 etapas', fr: '7 étapes restantes', de: 'Noch 7 Schritte', zh: '还剩7步' }[lang], { en: '6 steps remaining', es: 'Quedan 6 pasos', pt: 'Faltam 6 etapas', fr: '6 étapes restantes', de: 'Noch 6 Schritte', zh: '还剩6步' }[lang], { en: '5 steps remaining', es: 'Quedan 5 pasos', pt: 'Faltam 5 etapas', fr: '5 étapes restantes', de: 'Noch 5 Schritte', zh: '还剩5步' }[lang], { en: '4 steps remaining', es: 'Quedan 4 pasos', pt: 'Faltam 4 etapas', fr: '4 étapes restantes', de: 'Noch 4 Schritte', zh: '还剩4步' }[lang], filingCopy[lang].remaining, ...baseCopy.remaining] };
+  const [paymentSession, setPaymentSession] = useState<{ orderId: string; clientSecret: string } | null>(null);
   const [step, setStep] = useState(0);
   const [editingReview, setEditingReview] = useState(false);
   function editReview(nextStep: number) {
@@ -58,9 +60,30 @@ function FormationCheckout() {
     setEditingReview(false);
   }
   const stepHeading = useRef<HTMLHeadingElement>(null);
-  useEffect(() => { stepHeading.current?.focus({ preventScroll: true }); window.scrollTo({ top: 0, behavior: 'instant' }); }, [step]);
+  useEffect(() => { stepHeading.current?.focus({ preventScroll: true }); window.scrollTo({ top: 0, behavior: 'instant' }); }, [step, paymentSession]);
   const params = useSearchParams();
   const router = useRouter();
+  const resumeOrderId = params.get('order');
+  const restoreRequest = useRef<Promise<{ clientSecret?: string; complete?: boolean }> | null>(null);
+  useEffect(() => {
+    if (!resumeOrderId || paymentSession) return;
+    let canceled = false;
+    if (!restoreRequest.current) restoreRequest.current = (async () => {
+      const token = sessionStorage.getItem(`order:${resumeOrderId}`);
+      if (!token) throw new Error('Order access unavailable');
+      const response = await fetch('/api/orders/payment', { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
+      if (!response.ok) throw new Error('Payment unavailable');
+      return response.json();
+    })();
+    void restoreRequest.current.then(session => {
+      if (canceled) return;
+      if (session.clientSecret) { setStep(10); setPaymentSession({ orderId: resumeOrderId, clientSecret: session.clientSecret }); }
+      else router.replace(`/checkout/confirmation?order=${encodeURIComponent(resumeOrderId)}`);
+    }).catch(() => {
+      if (!canceled) router.replace(`/checkout/confirmation?order=${encodeURIComponent(resumeOrderId)}&payment=unavailable`);
+    });
+    return () => { canceled = true; };
+  }, [resumeOrderId, paymentSession, router]);
   const requestedPlan = params.get('plan');
   const [plan, setPlan] = useState<PlanId>(isPlanId(requestedPlan) ? requestedPlan : 'standard');
   const [webService, setWebService] = useState(false);
@@ -140,7 +163,11 @@ function FormationCheckout() {
       sessionStorage.setItem(`order:${data.orderId}`, orderToken.current);
       const payment = await fetch('/api/orders/payment', { method: 'POST', headers: { Authorization: `Bearer ${orderToken.current}` } }).catch(() => null);
       const session = payment?.ok ? await payment.json().catch(() => null) : null;
-      if (session?.url) window.location.assign(session.url);
+      if (session?.clientSecret) {
+        setPaymentSession({ orderId: data.orderId, clientSecret: session.clientSecret });
+        router.replace(`/checkout?order=${encodeURIComponent(data.orderId)}`, { scroll: false });
+      }
+      else if (session?.complete) router.push(`/checkout/confirmation?order=${encodeURIComponent(data.orderId)}`);
       else router.push(`/checkout/confirmation?order=${encodeURIComponent(data.orderId)}&payment=unavailable`);
     } catch {
       setError(true);
@@ -148,6 +175,8 @@ function FormationCheckout() {
       setIsLoading(false);
     }
   }
+
+  if (resumeOrderId && !paymentSession) return <main className="confirm-page"><p role="status">{lang === 'es' ? 'Recuperando tu pedido…' : 'Restoring your order…'}</p></main>;
 
   return <>
     <header className="setup-header">
@@ -160,11 +189,11 @@ function FormationCheckout() {
       </nav>
       <Link href="/contact" className="setup-support">{t('footer.contact')}</Link>
     </header>
-    <main className="setup-layout">
+    <main className={`setup-layout${resumeOrderId ? ' setup-payment-layout' : ''}`}>
     <div>
       <section className="setup-form-card card">
       <h1 className="t-h3" tabIndex={-1} ref={stepHeading}>{step === 9 ? (lang === 'es' ? 'Una web para presentar tu empresa · $70, pago único' : 'A website to introduce your business · $70, one-time payment') : copy.steps[step]}</h1>
-      <form onSubmit={handleSubmit}>
+      {paymentSession ? <EmbeddedPayment clientSecret={paymentSession.clientSecret} es={lang === 'es'} onComplete={() => router.push(`/checkout/confirmation?order=${encodeURIComponent(paymentSession.orderId)}`)} /> : <form onSubmit={handleSubmit}>
         <fieldset disabled={isLoading} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
           <legend className="sr-only">{copy.steps[step]}</legend>
           {step === 0 && <>
@@ -241,11 +270,11 @@ function FormationCheckout() {
           <div className="setup-actions premium-actions">
             {step === 0 && !editingReview ? <Link href={`/product?entity=${encodeURIComponent(entity)}&state=${encodeURIComponent(state)}&plan=${plan}`} className="btn btn-outline">← {copy.back}</Link> : <button type="button" className="btn btn-outline" disabled={step === 0} onClick={() => { setError(false); setStep(Math.max(0, step === 8 && skipEin ? 6 : step - 1)); }}>← {copy.back}</button>}
             {step === 9 ? <><button type="button" className="btn btn-outline" onClick={()=>{setWebService(false);finishSelection(10);}}>{lang === 'es' ? 'No, gracias' : 'No thanks'}</button><button type="button" className="btn btn-accent btn-xl" onClick={()=>{setWebService(true);finishSelection(10);}}>{lang === 'es' ? 'Agregar mi web · $70 →' : 'Add my website · $70 →'}</button></> : step === 4 ? <><button type="button" className="btn btn-outline" onClick={()=>{setPremiumPackage(false);finishSelection(5);}}>{lang === 'es' ? 'No, gracias' : 'No thanks'}</button><button type="button" className="btn btn-accent btn-xl" onClick={()=>{setPremiumPackage(true);finishSelection(5);}}>{lang === 'es' ? 'Agregar paquete · $99 →' : 'Add package · $99 →'}</button></> : <button type="submit" className="btn btn-accent btn-xl" disabled={isLoading || (step === 10 && (!acceptTerms || (entity === 'S-Corp' && !eligible)))}>
-              {step < 10 ? `${editingReview ? (lang === 'es' ? 'Guardar y revisar' : 'Save and review') : copy.next} →` : isLoading ? t('catalog.sending') : `${lang === 'es' ? 'Continuar a Stripe' : 'Continue to Stripe'} · ${formatUsd(getFormationQuote(state, entity, plan)!.total + (premiumPackage ? PREMIUM_PACKAGE_USD : 0) + einServiceFee(plan, premiumPackage, einRequested === true) + (domainRegistration?.price || 0) + (webService ? 70 : 0))} ${lang === 'es' ? '+ impuestos aplicables' : '+ applicable taxes'}`}
+              {step < 10 ? `${editingReview ? (lang === 'es' ? 'Guardar y revisar' : 'Save and review') : copy.next} →` : isLoading ? t('catalog.sending') : `${lang === 'es' ? 'Continuar al pago' : 'Continue to payment'} · ${formatUsd(getFormationQuote(state, entity, plan)!.total + (premiumPackage ? PREMIUM_PACKAGE_USD : 0) + einServiceFee(plan, premiumPackage, einRequested === true) + (domainRegistration?.price || 0) + (webService ? 70 : 0))} ${lang === 'es' ? '+ impuestos aplicables' : '+ applicable taxes'}`}
             </button>}
           </div>
         </fieldset>
-      </form>
+      </form>}
       </section>
       {step === 5 && <section className="setup-help card"><h2 className="t-h4">{copy.help}</h2><details><summary>{lang === 'es' ? '¿Qué información de los propietarios aparece en los documentos de constitución?' : 'What owner information appears in formation documents?'}</summary><p>{lang === 'es' ? `Los datos exigidos y su publicación dependen del estado y del tipo de entidad. Confirmaremos qué nombres y direcciones deben incluirse para tu constitución en ${state}. Usar una dirección comercial no garantiza que todos los datos personales sean privados.` : `Required information and public disclosure depend on the state and entity type. We’ll confirm which names and addresses must be included for your ${state} formation. Using a business address does not guarantee that all personal information remains private.`}</p></details></section>}
       {step === 0 && <section className="setup-help card">
@@ -253,14 +282,14 @@ function FormationCheckout() {
         {copy.faq.map(([question, answer]) => <details key={question}><summary>{question}</summary><p>{answer}</p></details>)}
       </section>}
     </div>
-    <aside className="setup-summary"><div className="card" style={{ padding: 28 }}>
+    {!resumeOrderId && <aside className="setup-summary"><div className="card" style={{ padding: 28 }}>
       <h2 className="t-h3 setup-summary-title">{copy.summary}</h2>
       <FormationSummary state={state} entity={entity} plan={plan} premiumPackage={premiumPackage} einRequested={einRequested === true} domainName={domainRegistration?.name} domainPrice={domainRegistration?.price} webService={webService} />
       {step >= 3 && <p className="formation-note">{mailChoice === 'virtual' ? (lang === 'es' ? 'Dirección virtual: solicitud pendiente de confirmación; sin cargo agregado hoy.' : 'Virtual address: request awaiting confirmation; no charge added today.') : (lang === 'es' ? 'Correspondencia: dirección propia.' : 'Business mail: own address.')}</p>}
 
       <ul className="pricing-features">{(t('pricing.features') as string[]).filter((_, i) => (i !== 6 || entity === 'S-Corp') && (i !== 2 || agent.choice === 'service') && (i !== 3 || includesEin(plan) || premiumPackage || einRequested)).map(feature => <li key={feature}>{feature}</li>)}</ul>
       <p className="formation-note">{t('catalog.extras')}</p>
-    </div></aside>
+    </div></aside>}
   </main></>;
 }
 

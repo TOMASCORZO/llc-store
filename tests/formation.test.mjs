@@ -126,7 +126,7 @@ test('payment retries reuse a stored session and concurrent attempts cannot crea
   const db = { from: () => ({
     select: () => ({ eq: () => ({ single: async () => ({ data: { ...stored } }) }) }),
     update: values => ({ eq: () => {
-      if (values.checkout_url) { Object.assign(stored, values); return Promise.resolve({}); }
+      if (values.checkout_id) { Object.assign(stored, values); return Promise.resolve({}); }
       return { is: () => ({ eq: () => ({ select: () => ({ maybeSingle: async () => {
         if (claimed) return { data: null };
         claimed = true;
@@ -134,16 +134,17 @@ test('payment retries reuse a stored session and concurrent attempts cannot crea
       } }) }) }) };
     } }),
   }) };
-  const route = load('src/app/api/orders/payment/route.ts', { 'next/server': { NextResponse }, '@/lib/domains': domainModule, '@/lib/openprovider': domainProvider, '@/lib/register-domain': {registerPaidDomain: async () => {}}, '@/lib/supabase': { supabaseAdmin: db }, '@/lib/payments': { ...payments, paymentsConfigured: () => true, createPayment: async () => { starts++; return { id: 'cs_test', url: 'https://checkout.stripe.com/c/pay/test' }; } } });
+  const route = load('src/app/api/orders/payment/route.ts', { 'next/server': { NextResponse }, '@/lib/domains': domainModule, '@/lib/openprovider': domainProvider, '@/lib/register-domain': {registerPaidDomain: async () => {}}, '@/lib/supabase': { supabaseAdmin: db }, '@/lib/payments': { ...payments, paymentsConfigured: () => true, resumePayment: async () => ({ clientSecret: 'cs_test_secret_test' }), createPayment: async () => { starts++; return { id: 'cs_test', clientSecret: 'cs_test_secret_test' }; } } });
   const request = () => new Request('http://localhost/api/orders/payment', { method: 'POST', headers: { Authorization: `Bearer ${'a'.repeat(64)}` } });
   const results = await Promise.all([route.POST(request()), route.POST(request())]);
   assert.deepEqual(results.map(r => r.status).sort(), [200, 409]);
   assert.equal(starts, 1);
   assert.equal((await route.POST(request())).status, 200);
   assert.equal(starts, 1);
-  stored.checkout_url = 'https://example.com/foreign-session';
-  assert.equal((await route.POST(request())).status, 409);
-  stored.checkout_url = 'https://checkout.stripe.com/c/pay/test';
+  const resumed = await route.POST(request());
+  assert.equal(resumed.headers.get('cache-control'), 'no-store');
+  assert.equal((await resumed.json()).clientSecret, 'cs_test_secret_test');
+  assert.equal(stored.checkout_url, null);
   stored.payment_provider = null;
   assert.equal((await route.POST(request())).status, 409);
   stored.payment_provider = 'stripe';
@@ -179,9 +180,9 @@ test('Stripe uses server prices, exclusive tax, billing prefill and idempotency 
   const calls = [];
   class StripeStub {
     customers = { create: async (body, options) => { calls.push({ kind: 'customer', body, options }); return { id: 'cus_test' }; } };
-    checkout = { sessions: { create: async (body, options) => { calls.push({ kind: 'session', body, options }); return { id: 'cs_test', url: 'https://checkout.stripe.com/c/pay/cs_test' }; } } };
+    checkout = { sessions: { create: async (body, options) => { calls.push({ kind: 'session', body, options }); return { id: 'cs_test', client_secret: 'cs_test_secret_test' }; } } };
   }
-  const config = { STRIPE_SECRET_KEY: 'sk_test_example', STRIPE_WEBHOOK_SECRET: 'secret', STRIPE_TAX_READY: 'true', STRIPE_FORMATION_TAX_CODE: 'txcd_10000000', STRIPE_STATE_FEE_TAX_CODE: 'txcd_10000000', APP_URL: 'https://www.justmyllc.com' };
+  const config = { NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: 'pk_test_example', STRIPE_SECRET_KEY: 'sk_test_example', STRIPE_WEBHOOK_SECRET: 'secret', STRIPE_TAX_READY: 'true', STRIPE_FORMATION_TAX_CODE: 'txcd_10000000', STRIPE_STATE_FEE_TAX_CODE: 'txcd_10000000', APP_URL: 'https://www.justmyllc.com' };
   const gateway = load('src/lib/payments.ts', { 'node:crypto': crypto, stripe: StripeStub, './billing': billingModule }, config);
   await gateway.createPayment({ id: 'internal_order', amount_usd: 102, state_fee_usd: 52, customer_email: 'test@example.com', billing_details: billingDetails });
   assert.equal(calls[0].body.name, billingDetails.name);
@@ -194,9 +195,12 @@ test('Stripe uses server prices, exclusive tax, billing prefill and idempotency 
   assert.equal(body.billing_address_collection, 'required');
   assert.equal(body.customer, 'cus_test');
   assert.equal(body.client_reference_id, 'internal_order');
-  assert.equal(body.success_url, 'https://www.justmyllc.com/checkout/confirmation?order=internal_order');
-  assert.equal(body.cancel_url, body.success_url + '&payment=canceled');
-  assert.equal(options.idempotencyKey, 'order:internal_order:checkout:v1');
+  assert.equal(body.ui_mode, 'embedded_page');
+  assert.equal(body.redirect_on_completion, 'never');
+  assert.equal(body.success_url, undefined);
+  assert.equal(body.cancel_url, undefined);
+  assert.equal(body.return_url, undefined);
+  assert.equal(options.idempotencyKey, 'order:internal_order:checkout:embedded:v1');
   assert.equal(payments.paymentsConfigured(), false);
   await assert.rejects(() => gateway.createPayment({ id: 'bad', amount_usd: 102, customer_email: 'test@example.com' }));
   delete config.STRIPE_STATE_FEE_TAX_CODE;
@@ -399,4 +403,22 @@ test('website service charges $70 once only when explicitly selected', async () 
   assert.equal(route.inserted().contact_details.webServiceFeeUsd,selected?70:0);
  }
  assert.equal((await api().post({...valid,contact:contactDetails,webService:'yes'})).status,400);
+});
+
+
+test('resuming embedded checkout rejects expired, foreign and mismatched sessions', async () => {
+  let session = { id: 'cs_test', metadata: { order_id: 'order' }, client_reference_id: 'order', currency: 'usd', amount_subtotal: 10200, ui_mode: 'embedded_page', status: 'open', client_secret: 'cs_test_secret_test' };
+  class StripeStub { checkout = { sessions: { retrieve: async () => session } }; }
+  const gateway = load('src/lib/payments.ts', { 'node:crypto': crypto, stripe: StripeStub, './billing': billingModule }, { STRIPE_SECRET_KEY: 'sk_test_example' });
+  const order = { id: 'order', checkout_id: 'cs_test', amount_usd: 102 };
+  assert.equal((await gateway.resumePayment(order)).clientSecret, 'cs_test_secret_test');
+  const validSession = { ...session };
+  for (const patch of [{ status: 'expired' }, { ui_mode: 'hosted_page' }, { amount_subtotal: 1 }, { currency: 'eur' }, { metadata: { order_id: 'other' } }, { client_reference_id: 'other' }, { client_secret: null }]) {
+    session = { ...validSession, ...patch };
+    await assert.rejects(() => gateway.resumePayment(order));
+  }
+  session = { ...validSession, status: 'complete', client_secret: null };
+  const completed = await gateway.resumePayment(order);
+  assert.equal(completed.complete, true);
+  assert.equal(completed.clientSecret, undefined);
 });

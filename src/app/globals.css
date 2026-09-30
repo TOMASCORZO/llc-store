@@ -1139,3 +1139,8 @@ html { scroll-padding-top: 100px; }
   .setup-progress ol { overflow-x: auto; }
   .setup-actions .btn { white-space: normal; max-width: 100%; overflow-wrap: anywhere; text-align: center; }
 }
+.embedded-payment { min-width: 0; margin-top: 24px; }
+.embedded-payment > h2 { margin-bottom: 14px; }
+.embedded-payment > .formation-note { margin-bottom: 24px; }
+.embedded-payment [role="alert"] { display: grid; gap: 16px; padding: 20px; border: 1px solid var(--line); border-radius: 12px; }
+.setup-layout.setup-payment-layout { grid-template-columns: minmax(0, 1fr); max-width: 1100px; }
